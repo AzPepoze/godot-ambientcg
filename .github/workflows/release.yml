@@ -1,0 +1,33 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Zip Addon
+        run: |
+          cd addons
+          zip -r ../ambientcg-addon.zip ambientcg
+          cd ..
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ambientcg-addon.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Godot Asset Library
+        uses: deep-entertainment/godot-asset-lib-action@v0.4.0
+        with:
+          username: ${{ secrets.GODOT_ASSET_LIB_USER }}
+          password: ${{ secrets.GODOT_ASSET_LIB_PASSWORD }}
+          assetId: ${{ secrets.GODOT_ASSET_ID }}

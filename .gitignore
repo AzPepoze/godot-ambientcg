@@ -1,0 +1,11 @@
+.godot/
+*.import
+export_presets.cfg
+.venv/
+__pycache__/
+*.pyc
+uv.lock
+.DS_Store
+*.tres.tmp
+addons/gut/
+user://
