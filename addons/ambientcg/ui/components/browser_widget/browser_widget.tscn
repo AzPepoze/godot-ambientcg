@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/ambientcg/ui/components/browser_widget/browser_widget.gd" id="1_widget"]
+
+[node name="BrowserWidget" type="PanelContainer"]
+custom_minimum_size = Vector2(140, 180)
+offset_right = 140.0
+offset_bottom = 180.0
+script = ExtResource("1_widget")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_margin_left = 4
+layout_margin_top = 4
+layout_margin_right = 4
+layout_margin_bottom = 4
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Asset ID"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Button" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+flat = true
+
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]

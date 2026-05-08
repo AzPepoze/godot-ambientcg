@@ -1,83 +1,40 @@
 @tool
-class_name AmbientCGPlugin
 extends EditorPlugin
 
-const UI = preload("res://addons/ambientcg/gui/ambient_ui/ambient_ui.tscn")
-const PLUGIN_TAB_ICON = preload("res://addons/ambientcg/plugin_assets/icon/icon_white.png")
+const AMBIENT_UI_SCENE = preload("res://addons/ambientcg/ui/main/ambient_ui.tscn")
+const MAIN_AUTOLOAD_NAME = "AmbientCG"
+const MAIN_AUTOLOAD_PATH = "res://addons/ambientcg/ambient_cg.gd"
 
-var ui_instance: AmbientUI
+var main_panel_instance
 
 
-func _enter_tree():
-	if not Engine.is_editor_hint():
-		return
+func _enter_tree() -> void:
+	add_autoload_singleton(MAIN_AUTOLOAD_NAME, MAIN_AUTOLOAD_PATH)
 
+	main_panel_instance = AMBIENT_UI_SCENE.instantiate()
+	EditorInterface.get_editor_main_screen().add_child(main_panel_instance)
 	_make_visible(false)
-	add_default_settings()
-
-	add_autoload_singleton("AmbientAPI", "res://addons/ambientcg/global/ambient_api.gd")
-	add_autoload_singleton("AmbientParser", "res://addons/ambientcg/global/ambient_parser.gd")
-	add_autoload_singleton(
-		"AmbientFileHandler", "res://addons/ambientcg/global/ambient_file_handler.gd"
-	)
-	add_autoload_singleton(
-		"AmbientMaterialMaker", "res://addons/ambientcg/global/ambient_material_maker.gd"
-	)
 
 
-func _exit_tree():
-	if is_instance_valid(ui_instance):
-		var parent = ui_instance.get_parent()
-		if parent:
-			parent.remove_child(ui_instance)
-		ui_instance.queue_free()
+func _exit_tree() -> void:
+	if main_panel_instance:
+		main_panel_instance.queue_free()
 
-	remove_autoload_singleton("AmbientAPI")
-	remove_autoload_singleton("AmbientParser")
-	remove_autoload_singleton("AmbientFileHandler")
-	remove_autoload_singleton("AmbientMaterialMaker")
+	remove_autoload_singleton(MAIN_AUTOLOAD_NAME)
 
 
-func _has_main_screen():
+func _has_main_screen() -> bool:
 	return true
 
 
-func _make_visible(visible):
-	if visible:
-		if not is_instance_valid(ui_instance):
-			ui_instance = UI.instantiate()
-			EditorInterface.get_editor_main_screen().add_child(ui_instance)
-		ui_instance.show()
-		ui_instance.open()
-	else:
-		if is_instance_valid(ui_instance):
-			ui_instance.hide()
+func _make_visible(visible: bool) -> void:
+	if main_panel_instance:
+		main_panel_instance.visible = visible
 
 
-func _get_plugin_name():
+func _get_plugin_name() -> String:
 	return "AmbientCG"
 
 
-func _get_plugin_icon():
-	return PLUGIN_TAB_ICON
-
-
-func add_default_settings():
-	var settings = {
-		"ambientcg/extract_path": "res://AmbientCG/Extracted",
-		"ambientcg/material_file_directory": "res://AmbientCG/Materials",
-		"ambientcg/environment_file_directory": "res://AmbientCG/Environments"
-	}
-
-	var changed = false
-	for path in settings:
-		if (
-			not ProjectSettings.has_setting(path)
-			or str(ProjectSettings.get_setting(path)).is_empty()
-		):
-			ProjectSettings.set_setting(path, settings[path])
-			ProjectSettings.set_initial_value(path, settings[path])
-			changed = true
-
-	if changed:
-		ProjectSettings.save()
+func _get_plugin_icon() -> Texture2D:
+	return EditorInterface.get_editor_theme().get_icon("ResourcePreloader", "EditorIcons")
