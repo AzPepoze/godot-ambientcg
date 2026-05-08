@@ -50,33 +50,33 @@ func http_request_download(url: String, path: String, file_size: int) -> void:
 	var http_request = HTTPRequest.new()
 	add_child(http_request)
 	http_request.download_file = path
+	var request_status = {"finished": false, "success": false}
+	http_request.request_completed.connect(func(result: int, _response_code: int, _headers: PackedStringArray, _body: PackedByteArray):
+		request_status["finished"] = true
+		request_status["success"] = (result == HTTPRequest.RESULT_SUCCESS)
+	)
+
 	http_request.request(url, ["User-Agent: %s" % user_agent], HTTPClient.METHOD_GET, "")
 
-	var bytes_left = file_size - http_request.get_downloaded_bytes()
-	while bytes_left > 0:
-		var status = http_request.get_http_client_status()
-		if (
-			status
-			in [
-				HTTPClient.STATUS_DISCONNECTED,
-				HTTPClient.STATUS_CONNECTION_ERROR,
-				HTTPClient.STATUS_CANT_RESOLVE
-			]
-		):
-			if signals:
-				signals.download_failed.emit(url, "Connection lost or error")
-			break
+	while not request_status["finished"]:
 		var downloaded = http_request.get_downloaded_bytes()
-		bytes_left = file_size - downloaded
 		if signals:
-			signals.download_progress_updated.emit(url, downloaded, file_size)
+			# Prevent UI math errors if downloaded bytes slightly exceed reported size
+			var actual_total = max(file_size, downloaded) if file_size > 0 else max(1, downloaded)
+			signals.download_progress_updated.emit(url, downloaded, actual_total)
 		await get_tree().create_timer(0.1).timeout
 
 	remove_child(http_request)
-	if bytes_left <= 0:
-		if signals:
-			signals.download_completed.emit(path)
 	http_request.queue_free()
+
+	if request_status["success"]:
+		if signals:
+			# Force UI to 100%
+			signals.download_progress_updated.emit(url, file_size, file_size)
+			signals.download_completed.emit(path)
+	else:
+		if signals:
+			signals.download_failed.emit(url, "Download failed or connection lost")
 
 
 func search_assets(query: String, type: String = "", override_uri: String = "") -> Dictionary:

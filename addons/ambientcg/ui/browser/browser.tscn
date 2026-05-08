@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://addons/ambientcg/ui/browser/browser.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://bh5suxm427fn0" path="res://addons/ambientcg/plugin_assets/icon/Search.svg" id="2_icon"]
-[ext_resource type="PackedScene" path="res://addons/ambientcg/gui/ambient_ui/sidebar/sidebar.tscn" id="3_sidebar"]
+[ext_resource type="PackedScene" path="res://addons/ambientcg/ui/sidebar/sidebar.tscn" id="3_sidebar"]
 
 [node name="Browser" type="MarginContainer"]
 anchors_preset = 15
@@ -91,11 +91,12 @@ grow_horizontal = 2
 grow_vertical = 2
 horizontal_scroll_mode = 0
 
-[node name="SearchGrid" type="GridContainer" parent="HSplit/MainPanel/ResultsArea/SearchScroll"]
+[node name="SearchGrid" type="HFlowContainer" parent="HSplit/MainPanel/ResultsArea/SearchScroll"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+alignment = 1
 
 [node name="StatusOverlay" type="CenterContainer" parent="HSplit/MainPanel/ResultsArea"]
 unique_name_in_owner = true

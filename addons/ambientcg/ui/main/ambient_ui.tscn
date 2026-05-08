@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://addons/ambientcg/ui/main/ambient_ui.gd" id="1_tpory"]
-[ext_resource type="PackedScene" path="res://addons/ambientcg/gui/ambient_ui/browser/browser.tscn" id="2_browser"]
-[ext_resource type="PackedScene" path="res://addons/ambientcg/gui/ambient_ui/settings/settings.tscn" id="3_settings"]
+[ext_resource type="PackedScene" path="res://addons/ambientcg/ui/browser/browser.tscn" id="2_browser"]
+[ext_resource type="PackedScene" path="res://addons/ambientcg/ui/settings/settings.tscn" id="3_settings"]
 
 [node name="AmbientUI" type="Control"]
 custom_minimum_size = Vector2(300, 300)

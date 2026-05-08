@@ -20,7 +20,7 @@ var awaiting_search_finish: bool = false
 @onready var sort_options: OptionButton = %SortOptions
 @onready var search_bar: LineEdit = %SearchBar
 @onready var search_scroll: ScrollContainer = %SearchScroll
-@onready var search_grid: GridContainer = %SearchGrid
+@onready var search_grid: HFlowContainer = %SearchGrid
 @onready var searching_indicator: Label = %SearchingIndicator
 @onready var status_overlay: CenterContainer = %StatusOverlay
 @onready var status_label: Label = %StatusLabel
@@ -85,6 +85,6 @@ func search(query: String = "", use_next: bool = false):
 	awaiting_search_finish = false
 
 
-func display_asset_details(asset_id: String):
+func display_asset_details(asset: Dictionary):
 	if sidebar and sidebar.has_method("display_asset"):
-		sidebar.display_asset(asset_id)
+		sidebar.display_asset(asset)

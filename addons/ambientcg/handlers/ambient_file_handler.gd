@@ -10,7 +10,7 @@ var api: Node
 var material_maker: Script
 
 
-func download_file_from_data(file_information: Dictionary, source_window: Node) -> void:
+func download_file_from_data(file_information: Dictionary, _source_window: Node) -> void:
 	check_dirs()
 	var download_path: String = config.get_setting(
 		config.SETTING_DOWNLOAD_PATH, config.DEFAULT_DOWNLOAD_PATH
@@ -28,8 +28,11 @@ func download_file_from_data(file_information: Dictionary, source_window: Node) 
 		% [path, utils.format_file_size(file_information.get("file_size", 0))]
 	)
 
-	await confirm_file_path(path, text)
-	source_window.grab_focus()
+	var confirmed = await confirm_file_path(path, text)
+	if not confirmed:
+		if logger:
+			logger.info("Download cancelled by user.", "FileHandler")
+		return
 
 	if signals:
 		signals.download_started.emit(file_uri, file_information.get("local_file_name", ""))
@@ -58,6 +61,9 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 		return
 
 	var files = reader.get_files()
+	if logger:
+		logger.debug("Found %d files to extract" % files.size(), "FileHandler")
+
 	var extraction_path: String = target_path
 	if extraction_path.is_empty():
 		extraction_path = await open_directory_dialog_for_path("Select path to Extract to")
@@ -67,6 +73,9 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 			logger.warn("Extraction cancelled: No directory selected", "FileHandler")
 		return
 
+	if logger:
+		logger.info("Extracting everything to: %s" % extraction_path, "FileHandler")
+		
 	var asset_name: String = source_file.get_file().get_basename()
 	var final_extract_path: String = extraction_path.trim_suffix("/") + "/" + asset_name
 	var mat_dir: String = config.get_setting(
@@ -76,21 +85,33 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 	if signals:
 		signals.extraction_started.emit(asset_name)
 
-	utils.clean_dir_content(final_extract_path)
+	if DirAccess.dir_exists_absolute(final_extract_path):
+		if logger:
+			logger.debug("Cleaning up old folder: %s" % final_extract_path, "FileHandler")
+		utils.clean_dir_content(final_extract_path)
+		
 	utils.ensure_dir(final_extract_path)
+	utils.ensure_dir(mat_dir)
 
 	var saved_files: PackedStringArray
 	for file in files:
 		var ext = file.get_extension().to_lower()
 		if ext in ["blend", "mtlx", "usdc", "usdz"]:
+			if logger:
+				logger.debug("Skipping extra file: %s" % file, "FileHandler")
 			continue
 
 		if ext in ["jpg", "jpeg", "png"]:
 			var res_regex = RegEx.new()
 			res_regex.compile("\\d+K")
 			if not res_regex.search(file):
+				if logger:
+					logger.debug("Skipping preview image: %s" % file, "FileHandler")
 				continue
 
+		if logger:
+			logger.debug("Extracting: %s" % file, "FileHandler")
+			
 		var file_data: PackedByteArray = reader.read_file(file)
 		var target_folder = mat_dir if ext == "tres" else final_extract_path
 		var new_file_path = target_folder.trim_suffix("/") + "/%s" % file.get_file()
@@ -108,6 +129,9 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 				if file_sys:
 					file_sys.update_file(new_file_path)
 
+	if logger:
+		logger.debug("Refreshing filesystem...", "FileHandler")
+		
 	if file_sys:
 		file_sys.scan()
 		file_sys.scan_sources()
@@ -144,7 +168,10 @@ func _process_image_scaling(path: String, options: Dictionary) -> void:
 
 
 func _wait_for_import(files: PackedStringArray, file_sys: Object) -> void:
-	var timeout = 5.0
+	if logger:
+		logger.debug("Waiting for resource import...", "FileHandler")
+		
+	var timeout = 25.0
 	while timeout > 0:
 		var all_imported = true
 		for f in files:
@@ -159,18 +186,36 @@ func _wait_for_import(files: PackedStringArray, file_sys: Object) -> void:
 			file_sys.scan()
 
 
-func confirm_file_path(_path: String, dialog_text: String) -> void:
+func confirm_file_path(_path: String, dialog_text: String) -> bool:
 	if not Engine.is_editor_hint():
-		return  # Skip dialog in non-editor/unit tests
+		return true  # Skip dialog in non-editor/unit tests
 
 	var confirmation_dialog = ConfirmationDialog.new()
 	add_child(confirmation_dialog)
-	confirmation_dialog.hide()
 	confirmation_dialog.exclusive = false
 	confirmation_dialog.title = "Confirm Download"
 	confirmation_dialog.dialog_text = dialog_text
-	confirmation_dialog.show()
-	await confirmation_dialog.confirmed
+
+	var state = [false, false] # [finished, confirmed]
+
+	confirmation_dialog.confirmed.connect(func():
+		state[0] = true
+		state[1] = true
+	)
+	
+	confirmation_dialog.canceled.connect(func():
+		state[0] = true
+	)
+
+	confirmation_dialog.popup_centered()
+
+	# Bulletproof wait for user to explicitly click a button or close the window
+	while not state[0]:
+		await get_tree().process_frame
+
+	confirmation_dialog.queue_free()
+
+	return state[1]
 
 
 func open_directory_dialog_for_path(title: String) -> String:

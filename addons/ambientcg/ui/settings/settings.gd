@@ -1,12 +1,12 @@
 @tool
-extends PanelContainer
+extends Control
 
 const CONFIG = preload("res://addons/ambientcg/core/ambient_config.gd")
 
-@onready var mat_path_edit: LineEdit = %MaterialPathEdit
-@onready var ext_path_edit: LineEdit = %ExtractPathEdit
-@onready var env_path_edit: LineEdit = %EnvPathEdit
-@onready var down_path_edit: LineEdit = %DownloadPathEdit
+@onready var mat_path_edit: LineEdit = %MatPath
+@onready var ext_path_edit: LineEdit = %ExtPath
+@onready var env_path_edit: LineEdit = %EnvPath
+@onready var down_path_edit: LineEdit = %DownPath
 
 
 func _ready() -> void:

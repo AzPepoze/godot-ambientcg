@@ -10,9 +10,10 @@ config_version=5
 
 [ambientcg]
 
-extract_path="res://AmbientCG/Extracted"
-material_file_directory="res://AmbientCG/Materials"
-environment_file_directory="res://AmbientCG/Environments"
+extract_path="res://ambientcg/extracted"
+material_file_directory="res://ambientcg/materials"
+environment_file_directory="res://ambientcg/environments"
+test_setting="hello_world"
 
 [application]
 
@@ -22,7 +23,15 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-AmbientCG="*res://addons/ambientcg/ambient_cg.gd"
+AmbientCG="*uid://cnxneyd8ilml2"
+
+[debug]
+
+gdscript/warnings/directory_rules={
+"res://addons": 0,
+"res://addons/gut": 0,
+"res://addons/gut/not_a_real_file": 0
+}
 
 [editor_plugins]
 

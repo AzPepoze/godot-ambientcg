@@ -10,9 +10,9 @@ func test_get_setting_default():
 
 
 func test_constants_not_empty():
-	assert_not_empty(Config.PLUGIN_NAME)
-	assert_not_empty(Config.HOME_URL)
-	assert_not_empty(Config.BASE_DOMAIN)
+	assert_ne(Config.PLUGIN_NAME, "")
+	assert_ne(Config.HOME_URL, "")
+	assert_ne(Config.BASE_DOMAIN, "")
 
 
 func test_set_and_get_setting():
