@@ -1,7 +1,7 @@
 [project]
 name = "godot-ambientcg"
 version = "0.1.0"
-description = "Godot AmbientCG Integration Plugin"
+description = "Godot AmbientCG"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = []

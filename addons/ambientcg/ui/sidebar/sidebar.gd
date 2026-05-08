@@ -31,13 +31,13 @@ func _ready() -> void:
 
 func display_asset(asset: Dictionary) -> void:
 	var new_asset_id = asset.get("id", "")
-	
+
 	# Skip re-fetching if the user clicked the exact same asset again
 	if current_asset_id == new_asset_id and not current_asset_id.is_empty():
 		asset_inspector.show()
 		sidebar_placeholder.hide()
 		return
-		
+
 	current_asset_id = new_asset_id
 	asset_inspector.hide()
 	sidebar_placeholder.show()
@@ -172,7 +172,7 @@ func _build_download_ui() -> void:
 			btn.add_theme_font_size_override("font_size", 11)
 			btn.custom_minimum_size = Vector2(100, 30)
 			btn.pressed.connect(func(): AmbientCG.file_handler.download_file_from_data(opt, self))
-			
+
 			if i < half_point:
 				col1.add_child(btn)
 			else:

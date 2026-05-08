@@ -12,6 +12,7 @@ var sort_text: String = "Popular"
 var next_query_uri: String = ""
 var awaiting_search_finish: bool = false
 
+var v_scroll_bar: VScrollBar
 @onready var sidebar: Control = %Sidebar
 @onready var search_result_count: Label = %SearchResultCount
 @onready var api_version_info_label: Label = %APIVersionInfo
@@ -29,7 +30,7 @@ var awaiting_search_finish: bool = false
 func _ready() -> void:
 	setup_filters()
 	init_browser()
-	
+
 	type_options.item_selected.connect(_on_filter_changed)
 	resolution_options.item_selected.connect(_on_filter_changed)
 	sort_options.item_selected.connect(_on_filter_changed)
@@ -64,8 +65,6 @@ func init_browser():
 	AmbientCG.Parser.api_info_to_option_button(type_options, info)
 	search(search_bar.text)
 
-
-var v_scroll_bar: VScrollBar
 
 func _process(_delta: float) -> void:
 	if not visible:

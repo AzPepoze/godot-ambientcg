@@ -4,7 +4,7 @@
 # Now used as a static class to avoid autoload overhead.
 
 # Plugin Info
-const PLUGIN_NAME = "AmbientCG"
+const PLUGIN_NAME = "Godot AmbientCG"
 const VERSION = "1.0.0"
 
 # Project Settings Keys

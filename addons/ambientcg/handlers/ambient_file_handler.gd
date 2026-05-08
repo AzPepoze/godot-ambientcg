@@ -44,7 +44,10 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 	if logger:
 		logger.info("Starting automatic extraction for: %s" % source_file, "FileHandler")
 
-	var file_sys := EditorInterface.get_resource_filesystem()
+	var file_sys = null
+	if Engine.is_editor_hint() and is_instance_valid(EditorInterface):
+		file_sys = EditorInterface.get_resource_filesystem()
+
 
 	var reader := ZIPReader.new()
 	var err = reader.open(source_file)
@@ -71,7 +74,7 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 
 	if logger:
 		logger.info("Extracting everything to: %s" % extraction_path, "FileHandler")
-		
+
 	var asset_name: String = source_file.get_file().get_basename()
 	var final_extract_path: String = extraction_path.trim_suffix("/") + "/" + asset_name
 	var mat_dir: String = config.get_setting(
@@ -85,7 +88,7 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 		if logger:
 			logger.debug("Cleaning up old folder: %s" % final_extract_path, "FileHandler")
 		utils.clean_dir_content(final_extract_path)
-		
+
 	utils.ensure_dir(final_extract_path)
 	utils.ensure_dir(mat_dir)
 
@@ -107,7 +110,7 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 
 		if logger:
 			logger.debug("Extracting: %s" % file, "FileHandler")
-			
+
 		var file_data: PackedByteArray = reader.read_file(file)
 		var new_file_path = final_extract_path.trim_suffix("/") + "/%s" % file.get_file()
 
@@ -115,21 +118,28 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 		if fs:
 			fs.store_buffer(file_data)
 			fs.close()
-			file_sys.update_file(new_file_path)
+			if file_sys:
+				file_sys.update_file(new_file_path)
+
 			saved_files.append(new_file_path)
 
 			if ext in ["jpg", "jpeg", "png"] and options.get("use_custom_size", false):
 				_process_image_scaling(new_file_path, options)
-				file_sys.update_file(new_file_path)
+				if file_sys:
+					file_sys.update_file(new_file_path)
+
 
 	if logger:
 		logger.debug("Refreshing filesystem...", "FileHandler")
-		
-	file_sys.scan()
-	file_sys.scan_sources()
+
+	if file_sys:
+		file_sys.scan()
+		file_sys.scan_sources()
+
 	reader.close()
 
 	await _wait_for_import(saved_files, file_sys)
+
 
 	var mat_save_path: String = mat_dir.trim_suffix("/") + "/" + asset_name + ".tres"
 	var extracted_tres_path: String = ""
@@ -146,7 +156,9 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 			out_file.store_string(fixed_content)
 			out_file.close()
 		DirAccess.remove_absolute(extracted_tres_path)
-		file_sys.update_file(mat_save_path)
+		if file_sys:
+			file_sys.update_file(mat_save_path)
+
 	else:
 		var mat: Resource
 		if options.get("enable_packing", false):
@@ -154,7 +166,9 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 		else:
 			mat = material_maker.make_standard_material(saved_files, options)
 		ResourceSaver.save(mat, mat_save_path)
-		file_sys.update_file(mat_save_path)
+		if file_sys:
+			file_sys.update_file(mat_save_path)
+
 
 	if logger:
 		logger.info("Success! Materials created and folders populated", "FileHandler")
@@ -172,10 +186,7 @@ func _fix_tres_texture_paths(content: String, extract_folder: String) -> String:
 		var original_path = match.get_string(1)
 		if not original_path.begins_with("res://"):
 			var absolute_path = absolute_prefix + original_path
-			result = result.replace(
-				'path="%s"' % original_path,
-				'path="%s"' % absolute_path
-			)
+			result = result.replace('path="%s"' % original_path, 'path="%s"' % absolute_path)
 	return result
 
 
@@ -192,7 +203,7 @@ func _process_image_scaling(path: String, options: Dictionary) -> void:
 					img.save_png(path)
 
 
-func _wait_for_import(files: PackedStringArray, file_sys: EditorFileSystem) -> void:
+func _wait_for_import(files: PackedStringArray, file_sys: Variant) -> void:
 	if logger:
 		logger.debug("Waiting for resource import...", "FileHandler")
 
@@ -207,7 +218,9 @@ func _wait_for_import(files: PackedStringArray, file_sys: EditorFileSystem) -> v
 			break
 		await get_tree().create_timer(0.5).timeout
 		timeout -= 0.5
-		file_sys.scan()
+		if file_sys:
+			file_sys.scan()
+
 
 
 func confirm_file_path(_path: String, dialog_text: String) -> bool:
@@ -220,16 +233,15 @@ func confirm_file_path(_path: String, dialog_text: String) -> bool:
 	confirmation_dialog.title = "Confirm Download"
 	confirmation_dialog.dialog_text = dialog_text
 
-	var state = [false, false] # [finished, confirmed]
+	var state = [false, false]  # [finished, confirmed]
 
-	confirmation_dialog.confirmed.connect(func():
-		state[0] = true
-		state[1] = true
+	confirmation_dialog.confirmed.connect(
+		func():
+			state[0] = true
+			state[1] = true
 	)
-	
-	confirmation_dialog.canceled.connect(func():
-		state[0] = true
-	)
+
+	confirmation_dialog.canceled.connect(func(): state[0] = true)
 
 	confirmation_dialog.popup_centered()
 

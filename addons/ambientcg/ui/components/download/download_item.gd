@@ -24,7 +24,9 @@ func _ready() -> void:
 func setup(p_url: String, p_name: String):
 	url = p_url
 	asset_name = p_name
-	var download_path = CONFIG.get_setting(CONFIG.SETTING_DOWNLOAD_PATH, CONFIG.DEFAULT_DOWNLOAD_PATH)
+	var download_path = CONFIG.get_setting(
+		CONFIG.SETTING_DOWNLOAD_PATH, CONFIG.DEFAULT_DOWNLOAD_PATH
+	)
 	local_path = download_path.trim_suffix("/") + "/%s" % p_name
 	if is_inside_tree():
 		title_label.text = asset_name
@@ -43,6 +45,8 @@ func _on_download_completed(p_path: String):
 		status_label.text = "Extracting..."
 		progress_bar.hide()
 
-		var default_path = CONFIG.get_setting(CONFIG.SETTING_EXTRACT_PATH, CONFIG.DEFAULT_EXTRACT_PATH)
+		var default_path = CONFIG.get_setting(
+			CONFIG.SETTING_EXTRACT_PATH, CONFIG.DEFAULT_EXTRACT_PATH
+		)
 		await AmbientCG.file_handler.extract_all(local_path, default_path)
 		queue_free()

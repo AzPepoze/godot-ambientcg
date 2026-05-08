@@ -22,14 +22,14 @@ func test_clean_dir_content():
 	var test_dir = "user://test_cleanup/"
 	var test_file = test_dir + "dummy.txt"
 	Utils.ensure_dir(test_dir)
-	
+
 	var f = FileAccess.open(test_file, FileAccess.WRITE)
 	f.store_string("test")
 	f.close()
-	
+
 	assert_true(FileAccess.file_exists(test_file))
 	Utils.clean_dir_content(test_dir)
 	assert_false(FileAccess.file_exists(test_file))
-	
+
 	# Cleanup
 	DirAccess.remove_absolute(test_dir)

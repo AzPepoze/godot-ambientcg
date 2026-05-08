@@ -19,16 +19,14 @@ func test_api_info_to_version_string_empty():
 
 
 func test_api_info_to_version_string_malformed():
-	var malformed = {"id": "test"} # Missing meta and data
+	var malformed = {"id": "test"}  # Missing meta and data
 	var result = Parser.api_info_to_version_string(malformed)
 	# Should not crash and handle missing keys gracefully
 	assert_string_contains(result, "test")
 
 
 func test_asset_list_query_valid():
-	var mock_json = {
-		"data": {"asset_list_query": {"uri": "https://api.test"}}
-	}
+	var mock_json = {"data": {"asset_list_query": {"uri": "https://api.test"}}}
 	assert_eq(Parser.asset_list_query(mock_json).get("uri"), "https://api.test")
 
 
@@ -41,20 +39,21 @@ func test_parse_assets_from_search_empty():
 
 
 func test_parse_assets_from_search_complex():
-	var mock_list = [{
-		"id": "Wood01",
-		"data": {
-			"implementation_list_query": {
-				"uri": "https://api.test/imp",
-				"parameters": [
-					{"id": "id"},
-					{"id": "q", "choices": [{"value": "1K"}]}
-				]
-			},
-			"preview_image_thumbnail": {"uris": {"128": "thumb.jpg"}},
-			"text": {"title": "Wood 01"}
+	var mock_list = [
+		{
+			"id": "Wood01",
+			"data":
+			{
+				"implementation_list_query":
+				{
+					"uri": "https://api.test/imp",
+					"parameters": [{"id": "id"}, {"id": "q", "choices": [{"value": "1K"}]}]
+				},
+				"preview_image_thumbnail": {"uris": {"128": "thumb.jpg"}},
+				"text": {"title": "Wood 01"}
+			}
 		}
-	}]
+	]
 	var results = Parser.parse_assets_from_search(mock_list)
 	assert_eq(results.size(), 1)
 	assert_eq(results[0].get("id"), "Wood01")

@@ -17,7 +17,7 @@ func _ready() -> void:
 
 func update_user_agent() -> void:
 	user_agent = (
-		"VenitStudios AmbientCG Godot Plugin (Godot %s)"
+		"Godot AmbientCG Plugin (Godot %s)"
 		% str(Engine.get_version_info().major, ".", Engine.get_version_info().minor)
 	)
 
@@ -51,9 +51,10 @@ func http_request_download(url: String, path: String, file_size: int) -> void:
 	add_child(http_request)
 	http_request.download_file = path
 	var request_status = {"finished": false, "success": false}
-	http_request.request_completed.connect(func(result: int, _response_code: int, _headers: PackedStringArray, _body: PackedByteArray):
-		request_status["finished"] = true
-		request_status["success"] = (result == HTTPRequest.RESULT_SUCCESS)
+	http_request.request_completed.connect(
+		func(result: int, _response_code: int, _headers: PackedStringArray, _body: PackedByteArray):
+			request_status["finished"] = true
+			request_status["success"] = (result == HTTPRequest.RESULT_SUCCESS)
 	)
 
 	http_request.request(url, ["User-Agent: %s" % user_agent], HTTPClient.METHOD_GET, "")
