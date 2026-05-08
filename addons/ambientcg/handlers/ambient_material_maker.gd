@@ -35,7 +35,7 @@ static func make_standard_material(
 
 
 static func _load_texture(path: String) -> Texture2D:
-	if path.begins_with("res://") and ResourceLoader.exists(path):
+	if path.begins_with("res://") and Engine.is_editor_hint():
 		return load(path)
 
 	# Fallback for user:// or non-imported files

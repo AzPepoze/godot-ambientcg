@@ -29,6 +29,18 @@ var awaiting_search_finish: bool = false
 func _ready() -> void:
 	setup_filters()
 	init_browser()
+	
+	type_options.item_selected.connect(_on_filter_changed)
+	resolution_options.item_selected.connect(_on_filter_changed)
+	sort_options.item_selected.connect(_on_filter_changed)
+	search_bar.text_submitted.connect(func(_text): search(search_bar.text))
+
+
+func _on_filter_changed(_index: int = 0) -> void:
+	type_text = type_options.get_item_text(type_options.selected)
+	resolution_text = resolution_options.get_item_text(resolution_options.selected)
+	sort_text = sort_options.get_item_text(sort_options.selected)
+	search(search_bar.text)
 
 
 func setup_filters():
@@ -53,6 +65,24 @@ func init_browser():
 	search(search_bar.text)
 
 
+var v_scroll_bar: VScrollBar
+
+func _process(_delta: float) -> void:
+	if not visible:
+		return
+	if v_scroll_bar == null:
+		v_scroll_bar = search_scroll.get_v_scroll_bar()
+	else:
+		var current_y = v_scroll_bar.size.y + v_scroll_bar.value
+		var should_load_more = current_y > v_scroll_bar.max_value * 0.8
+
+		if should_load_more and not awaiting_search_finish and not next_query_uri.is_empty():
+			search(search_bar.text, true)
+
+	if searching_indicator:
+		searching_indicator.visible = awaiting_search_finish
+
+
 func search(query: String = "", use_next: bool = false):
 	if awaiting_search_finish:
 		return
@@ -73,12 +103,23 @@ func search(query: String = "", use_next: bool = false):
 	var assets = parsed.get("assets", [])
 
 	for asset in assets:
+		var res_array: Array = asset.get("implementation_uris", {}).keys()
+		if resolution_text != "Any":
+			var has_res = false
+			for r in res_array:
+				if str(r).contains(resolution_text):
+					has_res = true
+					break
+			if not has_res:
+				continue
+
 		var widget = BROWSER_WIDGET.instantiate()
 		search_grid.add_child(widget)
 		widget.setup(asset, owner, self)
 
 	search_result_count.text = "%d Results Found" % parsed.get("result_count_total", 0)
-	status_overlay.visible = assets.size() == 0 and not use_next
+
+	status_overlay.visible = search_grid.get_child_count() == 0 and not use_next
 	if status_overlay.visible:
 		status_label.text = "No Results Found"
 
