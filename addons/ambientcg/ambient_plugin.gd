@@ -27,7 +27,9 @@ func _enter_tree():
 
 func _exit_tree():
 	if is_instance_valid(ui_instance):
-		EditorInterface.get_editor_main_screen().remove_child(ui_instance)
+		var parent = ui_instance.get_parent()
+		if parent:
+			parent.remove_child(ui_instance)
 		ui_instance.queue_free()
 
 	remove_autoload_singleton("AmbientAPI")
@@ -42,13 +44,14 @@ func _has_main_screen():
 
 func _make_visible(visible):
 	if visible:
-		ui_instance = UI.instantiate()
-		EditorInterface.get_editor_main_screen().add_child(ui_instance)
+		if not is_instance_valid(ui_instance):
+			ui_instance = UI.instantiate()
+			EditorInterface.get_editor_main_screen().add_child(ui_instance)
+		ui_instance.show()
 		ui_instance.open()
 	else:
 		if is_instance_valid(ui_instance):
-			EditorInterface.get_editor_main_screen().remove_child(ui_instance)
-			ui_instance.queue_free()
+			ui_instance.hide()
 
 
 func _get_plugin_name():
@@ -60,15 +63,21 @@ func _get_plugin_icon():
 
 
 func add_default_settings():
-	if not ProjectSettings.has_setting("ambientcg/extract_path"):
-		ProjectSettings.set_setting("ambientcg/extract_path", "res://AmbientCG/Extracted")
+	var settings = {
+		"ambientcg/extract_path": "res://AmbientCG/Extracted",
+		"ambientcg/material_file_directory": "res://AmbientCG/Materials",
+		"ambientcg/environment_file_directory": "res://AmbientCG/Environments"
+	}
 
-	if not ProjectSettings.has_setting("ambientcg/material_file_directory"):
-		ProjectSettings.set_setting(
-			"ambientcg/material_file_directory", "res://AmbientCG/Materials"
-		)
+	var changed = false
+	for path in settings:
+		if (
+			not ProjectSettings.has_setting(path)
+			or str(ProjectSettings.get_setting(path)).is_empty()
+		):
+			ProjectSettings.set_setting(path, settings[path])
+			ProjectSettings.set_initial_value(path, settings[path])
+			changed = true
 
-	if not ProjectSettings.has_setting("ambientcg/environment_file_directory"):
-		ProjectSettings.set_setting(
-			"ambientcg/environment_file_directory", "res://AmbientCG/Environments"
-		)
+	if changed:
+		ProjectSettings.save()

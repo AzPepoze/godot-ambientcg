@@ -14,7 +14,10 @@ dev = [
 
 [tool.taskipy.tasks]
 check = "python scripts/check.py"
+format = "gdformat addons/ tests/"
+lint = "gdlint addons/ tests/"
 clean = "python scripts/clean.py"
+dev = "python scripts/dev.py"
 version = "python scripts/get_godot_version.py"
 
 [tool.uv]
