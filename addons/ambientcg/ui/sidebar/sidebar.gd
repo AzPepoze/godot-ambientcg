@@ -12,6 +12,8 @@ var asset_data: Dictionary = {}
 # Variables for the fetched implementations
 var _fetching_count: int = 0
 var _parsed_implementations: Array[Dictionary] = []
+var _last_request_id: int = 0
+
 
 @onready var asset_inspector: VBoxContainer = %AssetInspector
 @onready var sidebar_placeholder: CenterContainer = %SidebarPlaceholder
@@ -27,6 +29,8 @@ func _ready() -> void:
 	asset_inspector.hide()
 	sidebar_placeholder.show()
 	AmbientCG.signals.download_started.connect(_on_download_started)
+	zip_radio.toggled.connect(_on_container_changed)
+	usdz_radio.toggled.connect(_on_container_changed)
 
 
 func display_asset(asset: Dictionary) -> void:
@@ -53,12 +57,16 @@ func display_asset(asset: Dictionary) -> void:
 
 	asset_title.text = current_asset_id
 
+	_last_request_id += 1
+	var request_id = _last_request_id
+
 	# Try to get thumbnail (some API formats might use different keys)
 	var thumbnail_url = asset_data.get("thumbnail", "")
 	if not thumbnail_url.is_empty():
-		_load_preview(thumbnail_url)
+		_load_preview(thumbnail_url, request_id)
 	else:
 		preview_rect.texture = null
+
 
 	var loader_label = Label.new()
 	loader_label.name = "LoaderLabel"
@@ -79,14 +87,21 @@ func display_asset(asset: Dictionary) -> void:
 		return
 
 	for qual in implementation_uris.keys():
-		_fetch_single_implementation(implementation_uris[qual])
+		_fetch_single_implementation(implementation_uris[qual], request_id)
 
 
-func _fetch_single_implementation(uri: String) -> void:
+
+func _fetch_single_implementation(uri: String, request_id: int) -> void:
 	var impl_data = await AmbientCG.api.api_init_implementation(uri)
+
+	if request_id != _last_request_id:
+		return
+
 	var parsed_impl = AmbientCG.Parser.parse_asset_implementation(impl_data)
 	if parsed_impl.size() > 0:
-		_parsed_implementations.append(parsed_impl[0])
+		_parsed_implementations.append_array(parsed_impl)
+
+
 
 	_fetching_count -= 1
 	if _fetching_count <= 0:
@@ -110,23 +125,13 @@ func _build_download_ui() -> void:
 		return
 
 	var filter_ext = "zip" if zip_radio.button_pressed else "usdz"
+	var is_hdri = asset_data.get("asset_type", "") == "hdri"
 
-	# Grouping: JPEG first, then PNG
-	var formats = ["JPG", "PNG"]
-	var grouped_data = {"JPG": [], "PNG": []}
+	var grouped_data = _group_implementations(_parsed_implementations, filter_ext, is_hdri)
+	var group_names = ["JPG", "PNG", "Environment" if is_hdri else "Other"]
 
-	for opt in _parsed_implementations:
-		var file_name = str(opt.get("local_file_name", ""))
-		if not file_name.to_lower().ends_with(filter_ext):
-			continue
-
-		if file_name.contains("JPG"):
-			grouped_data["JPG"].append(opt)
-		elif file_name.contains("PNG"):
-			grouped_data["PNG"].append(opt)
-
-	for fmt in formats:
-		var list = grouped_data[fmt]
+	for fmt in group_names:
+		var list = grouped_data.get(fmt, [])
 		if list.is_empty():
 			continue
 
@@ -196,13 +201,17 @@ func _extract_res(file_name: String) -> int:
 	return 0
 
 
-func _load_preview(url: String) -> void:
+func _load_preview(url: String, request_id: int) -> void:
 	var http = HTTPRequest.new()
 	add_child(http)
 	http.request(url)
 	var response = await http.request_completed
 	remove_child(http)
 	http.queue_free()
+
+	if request_id != _last_request_id:
+		return
+
 
 	if response[1] == 200:
 		var headers: PackedStringArray = response[2]
@@ -231,3 +240,24 @@ func _on_download_started(_url: String, asset_name: String) -> void:
 	var item = DOWNLOAD_ITEM_SCENE.instantiate()
 	download_list.add_child(item)
 	item.setup(_url, asset_name)
+
+func _group_implementations(
+	implementations: Array[Dictionary], filter_ext: String, is_hdri: bool
+) -> Dictionary:
+	var grouped = {"JPG": [], "PNG": [], "Environment": [], "Other": []}
+
+	for opt in implementations:
+		var file_name = str(opt.get("local_file_name", "")).to_lower()
+		if not file_name.ends_with(filter_ext):
+			continue
+
+		if is_hdri:
+			grouped["Environment"].append(opt)
+		elif file_name.contains("jpg"):
+			grouped["JPG"].append(opt)
+		elif file_name.contains("png"):
+			grouped["PNG"].append(opt)
+		else:
+			grouped["Other"].append(opt)
+
+	return grouped

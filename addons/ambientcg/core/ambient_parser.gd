@@ -105,6 +105,11 @@ static func parse_assets_from_search(list: Array) -> Array:
 		asset_output["thumbnail"] = preview_image_thumbnail.get("uris", {}).get("128", "")
 		asset_output["title"] = data.get("text", {}).get("title", "")
 		asset_output["id"] = id
+		if id.to_lower().contains("hdri"):
+			asset_output["asset_type"] = "hdri"
+		else:
+			asset_output["asset_type"] = "material"
+
 
 		output.append(asset_output)
 	return output

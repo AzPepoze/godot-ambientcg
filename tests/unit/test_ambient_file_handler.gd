@@ -17,6 +17,8 @@ func before_each():
 	_handler.config = load("res://addons/ambientcg/core/ambient_config.gd")
 	_handler.utils = load("res://addons/ambientcg/utils/ambient_utils.gd")
 	_handler.material_maker = load("res://addons/ambientcg/handlers/ambient_material_maker.gd")
+	_handler.environment_maker = load("res://addons/ambientcg/handlers/ambient_environment_maker.gd")
+
 	add_child(_handler)
 
 

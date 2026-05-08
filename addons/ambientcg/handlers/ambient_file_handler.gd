@@ -8,6 +8,9 @@ var logger: Node
 var signals: Node
 var api: Node
 var material_maker: Script
+var environment_maker: Script
+
+
 
 
 func download_file_from_data(file_information: Dictionary, _source_window: Node) -> void:
@@ -141,7 +144,14 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 	await _wait_for_import(saved_files, file_sys)
 
 
-	var mat_save_path: String = mat_dir.trim_suffix("/") + "/" + asset_name + ".tres"
+	var is_hdri := asset_name.to_lower().contains("hdri")
+	var save_dir := mat_dir
+	if is_hdri:
+		save_dir = config.get_setting(config.SETTING_ENVIRONMENT_DIR, config.DEFAULT_ENVIRONMENT_DIR)
+
+
+	var mat_save_path: String = save_dir.trim_suffix("/") + "/" + asset_name + ".tres"
+
 	var extracted_tres_path: String = ""
 	for f in saved_files:
 		if f.get_extension().to_lower() == "tres":
@@ -160,18 +170,25 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 			file_sys.update_file(mat_save_path)
 
 	else:
-		var mat: Resource
-		if options.get("enable_packing", false):
-			mat = material_maker.make_orm_material(saved_files, options)
+		var res: Resource
+		if is_hdri:
+			res = environment_maker.make_environment_resource(saved_files)
+
+
+		elif options.get("enable_packing", false):
+			res = material_maker.make_orm_material(saved_files, options)
 		else:
-			mat = material_maker.make_standard_material(saved_files, options)
-		ResourceSaver.save(mat, mat_save_path)
+			res = material_maker.make_standard_material(saved_files, options)
+
+		ResourceSaver.save(res, mat_save_path)
+
 		if file_sys:
 			file_sys.update_file(mat_save_path)
 
 
 	if logger:
-		logger.info("Success! Materials created and folders populated", "FileHandler")
+		logger.info("Success! Resources created and folders populated", "FileHandler")
+
 	if signals:
 		signals.extraction_completed.emit(asset_name, {"path": final_extract_path})
 	DirAccess.remove_absolute(source_file)

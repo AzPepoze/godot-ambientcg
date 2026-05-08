@@ -1,7 +1,6 @@
 @tool
 extends Node
 
-# Injected dependencies
 var config: Script
 var parser: Script
 var logger: Node

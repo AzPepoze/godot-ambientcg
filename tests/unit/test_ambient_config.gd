@@ -4,7 +4,6 @@ var Config = load("res://addons/ambientcg/core/ambient_config.gd")
 
 
 func test_get_setting_default():
-	# Test that it returns default value when setting doesn't exist
 	var val = Config.get_setting("non_existent/setting", "default")
 	assert_eq(val, "default")
 
