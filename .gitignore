@@ -9,3 +9,4 @@ uv.lock
 *.tres.tmp
 addons/gut/
 user://
+./ambientcg
