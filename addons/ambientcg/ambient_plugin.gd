@@ -33,7 +33,7 @@ func _make_visible(visible: bool) -> void:
 
 
 func _get_plugin_name() -> String:
-	return "Godot AmbientCG"
+	return "AmbientCG"
 
 
 func _get_plugin_icon() -> Texture2D:

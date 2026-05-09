@@ -16,7 +16,7 @@ func _ready() -> void:
 
 func update_user_agent() -> void:
 	user_agent = (
-		"Godot AmbientCG Plugin (Godot %s)"
+		"AmbientCG Plugin (Godot %s)"
 		% str(Engine.get_version_info().major, ".", Engine.get_version_info().minor)
 	)
 
@@ -28,8 +28,7 @@ func http_request(
 	request_data: String = ""
 ):
 	if url.is_empty() or not url.begins_with("http"):
-		if logger:
-			logger.warn("Attempted to request invalid URL: '%s'" % url, "Network")
+		logger.warn("Attempted to request invalid URL: '%s'" % url, "Network")
 		return [1, 0, {}, PackedByteArray()]
 
 	var http_request = HTTPRequest.new()

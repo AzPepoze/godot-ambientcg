@@ -17,7 +17,7 @@ test_setting="hello_world"
 
 [application]
 
-config/name="Godot AmbientCG"
+config/name="AmbientCG"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 

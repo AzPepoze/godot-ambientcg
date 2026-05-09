@@ -34,7 +34,7 @@ func after_each():
 
 func test_update_user_agent():
 	_api.update_user_agent()
-	assert_string_contains(_api.user_agent, "Godot AmbientCG Plugin")
+	assert_string_contains(_api.user_agent, "AmbientCG Plugin")
 
 
 func test_http_request_invalid_url():

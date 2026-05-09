@@ -1,6 +1,6 @@
-# Contributing to Godot AmbientCG
+# Contributing to AmbientCG
 
-First off, thank you for considering contributing to Godot AmbientCG! It's people like you that make the open-source community such an amazing place to learn, inspire, and create.
+First off, thank you for considering contributing to AmbientCG! It's people like you that make the open-source community such an amazing place to learn, inspire, and create.
 
 ## How Can I Contribute?
 
@@ -35,29 +35,30 @@ This project uses [uv](https://docs.astral.sh/uv/) for Python-based development 
 ### Getting Started
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/godot-ambientcg.git
-   cd godot-ambientcg
-   ```
+
+     ```bash
+     git clone https://github.com/your-username/godot-ambientcg.git
+     cd godot-ambientcg
+     ```
 
 2. Sync dependencies:
-   ```bash
-   uv sync
-   ```
+     ```bash
+     uv sync
+     ```
 
 ### Development Tasks
 
 We use `uv` to run various development tasks. You can run them using `uv run task <command>`.
 
-| Command | Description |
-| :--- | :--- |
-| `check` | Runs `format`, `lint`, and `test` in sequence. |
-| `format` | Formats all GDScript files using `gdformat`. |
-| `lint` | Checks code style using `gdlint`. |
-| `test` | Runs unit tests using the Godot editor in headless mode. |
-| `clean` | Removes downloaded assets and Godot cache files. |
-| `dev` | Launches the project in the Godot editor. |
-| `version` | Gets the current Godot version required. |
+| Command   | Description                                              |
+| :-------- | :------------------------------------------------------- |
+| `check`   | Runs `format`, `lint`, and `test` in sequence.           |
+| `format`  | Formats all GDScript files using `gdformat`.             |
+| `lint`    | Checks code style using `gdlint`.                        |
+| `test`    | Runs unit tests using the Godot editor in headless mode. |
+| `clean`   | Removes downloaded assets and Godot cache files.         |
+| `dev`     | Launches the project in the Godot editor.                |
+| `version` | Gets the current Godot version required.                 |
 
 ## Code Style
 
@@ -66,7 +67,9 @@ We follow the standard [GDScript Style Guide](https://docs.godotengine.org/en/st
 ## Testing
 
 Unit tests are located in the `tests/unit/` directory. To run tests, use:
+
 ```bash
 uv run task test
 ```
+
 Please ensure all tests pass before submitting your changes.

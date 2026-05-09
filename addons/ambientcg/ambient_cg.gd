@@ -9,7 +9,7 @@ const Config = preload("res://addons/ambientcg/core/ambient_config.gd")
 const Utils = preload("res://addons/ambientcg/utils/ambient_utils.gd")
 const Parser = preload("res://addons/ambientcg/core/ambient_parser.gd")
 const MaterialMaker = preload("res://addons/ambientcg/handlers/ambient_material_maker.gd")
-#const EnvironmentMaker = preload("res://addons/ambientcg/handlers/ambient_environment_maker.gd")
+const EnvironmentMaker = preload("res://addons/ambientcg/handlers/ambient_environment_maker.gd")
 
 
 # Stateful sub-modules (Nodes)
@@ -58,7 +58,7 @@ func _initialize_modules() -> void:
 	file_handler.set("signals", signals)
 	file_handler.set("api", api)
 	file_handler.set("material_maker", MaterialMaker)
-	#file_handler.set("environment_maker", EnvironmentMaker)
+	file_handler.set("environment_maker", EnvironmentMaker)
 
 
 

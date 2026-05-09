@@ -18,13 +18,10 @@ func download_file_from_data(file_information: Dictionary, _source_window: Node)
 	var download_path: String = config.get_setting(
 		config.SETTING_DOWNLOAD_PATH, config.DEFAULT_DOWNLOAD_PATH
 	)
-	var path: String = (
-		download_path.trim_suffix("/") + "/%s" % file_information.get("local_file_name", "")
-	)
+	var path: String = download_path.path_join(file_information.get("local_file_name", ""))
 	var file_uri = file_information.get("uri", "")
 
-	if logger:
-		logger.info("Initiating download to Project: %s" % file_uri, "FileHandler")
+	_log_info("Initiating download to Project: %s" % file_uri)
 
 	var text = (
 		"File will be Downloaded to %s and is Approx. %s.\nDownload?"
@@ -33,8 +30,7 @@ func download_file_from_data(file_information: Dictionary, _source_window: Node)
 
 	var confirmed = await confirm_file_path(path, text)
 	if not confirmed:
-		if logger:
-			logger.info("Download cancelled by user.", "FileHandler")
+		_log_info("Download cancelled by user.")
 		return
 
 	if signals:
@@ -44,8 +40,7 @@ func download_file_from_data(file_information: Dictionary, _source_window: Node)
 
 
 func extract_all(source_file: String, target_path: String = "", options: Dictionary = {}) -> void:
-	if logger:
-		logger.info("Starting automatic extraction for: %s" % source_file, "FileHandler")
+	_log_info("Starting automatic extraction for: %s" % source_file)
 
 	var file_sys = null
 	if Engine.is_editor_hint() and is_instance_valid(EditorInterface):
@@ -56,84 +51,34 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 	var err = reader.open(source_file)
 
 	if err != OK:
-		if logger:
-			logger.error("Failed to open ZIP file: %d" % err, "FileHandler")
+		_log_error("Failed to open ZIP file: %d" % err)
 		if signals:
 			signals.extraction_failed.emit(source_file.get_file(), "Failed to open ZIP")
 		return
 
 	var files = reader.get_files()
-	if logger:
-		logger.debug("Found %d files to extract" % files.size(), "FileHandler")
+	_log_debug("Found %d files to extract" % files.size())
 
-	var extraction_path: String = target_path
+	var extraction_path = await _get_extraction_path(target_path)
 	if extraction_path.is_empty():
-		extraction_path = await open_directory_dialog_for_path("Select path to Extract to")
-
-	if extraction_path.is_empty():
-		if logger:
-			logger.warn("Extraction cancelled: No directory selected", "FileHandler")
 		return
 
-	if logger:
-		logger.info("Extracting everything to: %s" % extraction_path, "FileHandler")
+	_log_info("Extracting everything to: %s" % extraction_path)
 
 	var asset_name: String = source_file.get_file().get_basename()
-	var final_extract_path: String = extraction_path.trim_suffix("/") + "/" + asset_name
-	var mat_dir: String = config.get_setting(
-		config.SETTING_MATERIAL_DIR, config.DEFAULT_MATERIAL_DIR
-	)
+	var final_extract_path: String = extraction_path.path_join(asset_name)
 
 	if signals:
 		signals.extraction_started.emit(asset_name)
 
 	if DirAccess.dir_exists_absolute(final_extract_path):
-		if logger:
-			logger.debug("Cleaning up old folder: %s" % final_extract_path, "FileHandler")
+		_log_debug("Cleaning up old folder: %s" % final_extract_path)
 		utils.clean_dir_content(final_extract_path)
 
-	utils.ensure_dir(final_extract_path)
-	utils.ensure_dir(mat_dir)
-
-	var saved_files: PackedStringArray
-	for file in files:
-		var ext = file.get_extension().to_lower()
-		if ext in ["blend", "mtlx", "usdc", "usdz"]:
-			if logger:
-				logger.debug("Skipping extra file: %s" % file, "FileHandler")
-			continue
-
-		if ext in ["jpg", "jpeg", "png"]:
-			var res_regex = RegEx.new()
-			res_regex.compile("\\d+K")
-			if not res_regex.search(file):
-				if logger:
-					logger.debug("Skipping preview image: %s" % file, "FileHandler")
-				continue
-
-		if logger:
-			logger.debug("Extracting: %s" % file, "FileHandler")
-
-		var file_data: PackedByteArray = reader.read_file(file)
-		var new_file_path = final_extract_path.trim_suffix("/") + "/%s" % file.get_file()
-
-		var fs := FileAccess.open(new_file_path, FileAccess.WRITE)
-		if fs:
-			fs.store_buffer(file_data)
-			fs.close()
-			if file_sys:
-				file_sys.update_file(new_file_path)
-
-			saved_files.append(new_file_path)
-
-			if ext in ["jpg", "jpeg", "png"] and options.get("use_custom_size", false):
-				_process_image_scaling(new_file_path, options)
-				if file_sys:
-					file_sys.update_file(new_file_path)
+	var saved_files = _extract_zip_contents(reader, files, final_extract_path, options, file_sys)
 
 
-	if logger:
-		logger.debug("Refreshing filesystem...", "FileHandler")
+	_log_debug("Refreshing filesystem...")
 
 	if file_sys:
 		file_sys.scan()
@@ -144,50 +89,10 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 	await _wait_for_import(saved_files, file_sys)
 
 
-	var is_hdri := asset_name.to_lower().contains("hdri")
-	var save_dir := mat_dir
-	if is_hdri:
-		save_dir = config.get_setting(config.SETTING_ENVIRONMENT_DIR, config.DEFAULT_ENVIRONMENT_DIR)
+	await _finalize_extraction(asset_name, saved_files, final_extract_path, options, file_sys)
 
 
-	var mat_save_path: String = save_dir.trim_suffix("/") + "/" + asset_name + ".tres"
-
-	var extracted_tres_path: String = ""
-	for f in saved_files:
-		if f.get_extension().to_lower() == "tres":
-			extracted_tres_path = f
-			break
-
-	if not extracted_tres_path.is_empty():
-		var tres_content = FileAccess.get_file_as_string(extracted_tres_path)
-		var fixed_content = _fix_tres_texture_paths(tres_content, final_extract_path)
-		var out_file = FileAccess.open(mat_save_path, FileAccess.WRITE)
-		if out_file:
-			out_file.store_string(fixed_content)
-			out_file.close()
-		DirAccess.remove_absolute(extracted_tres_path)
-		if file_sys:
-			file_sys.update_file(mat_save_path)
-
-	else:
-		var res: Resource
-		if is_hdri:
-			res = environment_maker.make_environment_resource(saved_files)
-
-
-		elif options.get("enable_packing", false):
-			res = material_maker.make_orm_material(saved_files, options)
-		else:
-			res = material_maker.make_standard_material(saved_files, options)
-
-		ResourceSaver.save(res, mat_save_path)
-
-		if file_sys:
-			file_sys.update_file(mat_save_path)
-
-
-	if logger:
-		logger.info("Success! Resources created and folders populated", "FileHandler")
+	_log_info("Success! Resources created and folders populated")
 
 	if signals:
 		signals.extraction_completed.emit(asset_name, {"path": final_extract_path})
@@ -195,44 +100,49 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 
 
 func _fix_tres_texture_paths(content: String, extract_folder: String) -> String:
-	var absolute_prefix = extract_folder.trim_suffix("/") + "/"
+	var absolute_prefix = extract_folder
 	var path_regex = RegEx.new()
 	path_regex.compile('path="([^"]+)"')
 	var result = content
 	for match in path_regex.search_all(content):
 		var original_path = match.get_string(1)
 		if not original_path.begins_with("res://"):
-			var absolute_path = absolute_prefix + original_path
+			var absolute_path = absolute_prefix.path_join(original_path)
 			result = result.replace('path="%s"' % original_path, 'path="%s"' % absolute_path)
 	return result
 
 
 func _process_image_scaling(path: String, options: Dictionary) -> void:
 	var img = Image.load_from_file(path)
-	if img and not img.is_empty():
-		var new_size = options.get("img_size", img.get_size())
-		if not new_size == Vector2(img.get_size()):
-			img.resize(new_size.x, new_size.y, Image.INTERPOLATE_BILINEAR)
-			match path.get_extension().to_lower():
-				"jpg", "jpeg":
-					img.save_jpg(path)
-				"png":
-					img.save_png(path)
+	if not img or img.is_empty():
+		return
+
+	var current_size = img.get_size()
+	var target_size = options.get("img_size", current_size)
+
+	if target_size != current_size:
+		img.resize(target_size.x, target_size.y, Image.INTERPOLATE_BILINEAR)
+		var ext = path.get_extension().to_lower()
+		if ext in ["jpg", "jpeg"]:
+			img.save_jpg(path)
+		elif ext == "png":
+			img.save_png(path)
 
 
 func _wait_for_import(files: PackedStringArray, file_sys: Variant) -> void:
-	if logger:
-		logger.debug("Waiting for resource import...", "FileHandler")
+	_log_debug("Waiting for resource import...")
 
 	var timeout = 5.0
 	while timeout > 0:
-		var all_imported = true
+		var missing_files = false
 		for f in files:
 			if not ResourceLoader.exists(f):
-				all_imported = false
+				missing_files = true
 				break
-		if all_imported:
+
+		if not missing_files:
 			break
+
 		await get_tree().create_timer(0.5).timeout
 		timeout -= 0.5
 		if file_sys:
@@ -284,6 +194,121 @@ func open_directory_dialog_for_path(title: String) -> String:
 	)
 	dialog.show()
 	return await dialog.dir_selected
+
+
+func _get_extraction_path(target_path: String) -> String:
+	var extraction_path: String = target_path
+	if extraction_path.is_empty():
+		extraction_path = await open_directory_dialog_for_path("Select path to Extract to")
+
+	if extraction_path.is_empty():
+		_log_warn("Extraction cancelled: No directory selected")
+
+	return extraction_path
+
+
+func _extract_zip_contents(
+	reader: ZIPReader,
+	files: PackedStringArray,
+	target_dir: String,
+	options: Dictionary,
+	file_sys: Variant
+) -> PackedStringArray:
+	utils.ensure_dir(target_dir)
+
+	var res_regex = RegEx.new()
+	res_regex.compile("\\d+K")
+
+	var saved_files: PackedStringArray
+	for file in files:
+		var ext = file.get_extension().to_lower()
+		if ext in ["blend", "mtlx", "usdc", "usdz"]:
+			_log_debug("Skipping extra file: %s" % file)
+			continue
+
+		if ext in ["jpg", "jpeg", "png"] and not res_regex.search(file):
+			_log_debug("Skipping preview image: %s" % file)
+			continue
+
+		_log_debug("Extracting: %s" % file)
+
+		var file_data: PackedByteArray = reader.read_file(file)
+		var new_file_path = target_dir.path_join(file.get_file())
+
+		var fs := FileAccess.open(new_file_path, FileAccess.WRITE)
+		if fs:
+			fs.store_buffer(file_data)
+			fs.close()
+			if file_sys:
+				file_sys.update_file(new_file_path)
+
+			saved_files.append(new_file_path)
+
+			if ext in ["jpg", "jpeg", "png"] and options.get("use_custom_size", false):
+				_process_image_scaling(new_file_path, options)
+				if file_sys:
+					file_sys.update_file(new_file_path)
+
+	return saved_files
+
+
+func _log_debug(message: String) -> void:
+	logger.debug(message, "FileHandler")
+
+
+func _log_info(message: String) -> void:
+	logger.info(message, "FileHandler")
+
+
+func _log_warn(message: String) -> void:
+	logger.warn(message, "FileHandler")
+
+
+func _log_error(message: String) -> void:
+	logger.error(message, "FileHandler")
+
+
+func _finalize_extraction(
+	asset_name: String,
+	saved_files: PackedStringArray,
+	final_extract_path: String,
+	options: Dictionary,
+	file_sys: Variant
+) -> void:
+	var is_hdri := asset_name.to_lower().contains("hdri")
+	var mat_dir: String = config.get_setting(config.SETTING_MATERIAL_DIR, config.DEFAULT_MATERIAL_DIR)
+	var env_dir: String = config.get_setting(config.SETTING_ENVIRONMENT_DIR, config.DEFAULT_ENVIRONMENT_DIR)
+	var save_dir := env_dir if is_hdri else mat_dir
+
+	var mat_save_path: String = save_dir.path_join(asset_name + ".tres")
+
+	var extracted_tres_path: String = ""
+	for f in saved_files:
+		if f.get_extension().to_lower() == "tres":
+			extracted_tres_path = f
+			break
+
+	if not extracted_tres_path.is_empty():
+		var tres_content = FileAccess.get_file_as_string(extracted_tres_path)
+		var fixed_content = _fix_tres_texture_paths(tres_content, final_extract_path)
+		var out_file = FileAccess.open(mat_save_path, FileAccess.WRITE)
+		if out_file:
+			out_file.store_string(fixed_content)
+			out_file.close()
+		DirAccess.remove_absolute(extracted_tres_path)
+	else:
+		var res: Resource
+		if is_hdri:
+			res = environment_maker.make_environment_resource(saved_files)
+		elif options.get("enable_packing", false):
+			res = material_maker.make_orm_material(saved_files, options)
+		else:
+			res = material_maker.make_standard_material(saved_files, options)
+
+		ResourceSaver.save(res, mat_save_path)
+
+	if file_sys:
+		file_sys.update_file(mat_save_path)
 
 
 func check_dirs() -> void:

@@ -1,65 +1,78 @@
-# Godot AmbientCG
+<div align="center">
+  
+# ✦ AmbientCG ✦
 
 Search, download, and automatically import PBR materials and HDRI environments directly from [ambientCG.com](https://ambientcg.com) into the Godot Engine.
 
+[![License](https://img.shields.io/badge/◈_LICENSE_◈-MIT-007bff.svg)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/AzPepoze/godot-ambientcg.svg?label=◈_STARS_◈&color=007bff)](https://github.com/AzPepoze/godot-ambientcg/stargazers)
+
+</div>
+
 > [!NOTE]
-> This project was forked from [VenitStudios/AmbientCG](https://github.com/VenitStudios/AmbientCG).
+> This project was forked from [VenitStudios/AmbientCG](https://github.com/VenitStudios/AmbientCG) to modernize the workflow for Godot 4.
 
-## Screenshots
+## CONTENTS
 
-<p align="center">
-  <img width="515" alt="editor_screenshot" src="https://github.com/user-attachments/assets/dae775b1-250c-4b4a-9127-b34e7570f7eb" />
-  <img width="515" alt="material_import" src="https://github.com/user-attachments/assets/98fe5701-3e4a-4cdf-8d75-9ae8c52ef338" />
-</p>
+1. [Screenshots](#screenshots)
+2. [Prerequisites](#prerequisites)
+3. [Installation](#installation)
+4. [Usage](#usage)
+5. [Configuration](#configuration)
+6. [Contributing](#contributing)
+7. [Stonks!](#stonks)
 
-## Features
+## SCREENSHOTS
 
-- **Direct Integration**: Search and download assets within the Godot editor.
-- **Automatic Import**: Automatically creates Materials and HDRI Environments.
-- **Configurable**: Define your own paths for downloads and extractions.
+| Asset Browser | Material Detail |
+| :---: | :---: |
+| ![editor_screenshot](https://github.com/user-attachments/assets/dae775b1-250c-4b4a-9127-b34e7570f7eb) | ![material_import](https://github.com/user-attachments/assets/98fe5701-3e4a-4cdf-8d75-9ae8c52ef338) |
+| *Search and download assets via non-blocking background requests.* | *Automatic PBR mapping to Material3D and Environment resources.* |
 
-## Installation
+## PREREQUISITES
 
-1. Copy the `addons/ambientcg` folder into your project's `addons/` directory.
-2. Enable the plugin in **Project Settings > Plugins**.
-3. Access the browser via the **AmbientCG** button at the top of the editor.
+[!TIP]
+Ensure you are using a modern version of Godot 4 for the best compatibility.
 
-## Usage
+- **Godot Engine 4.0+** (Standard or .NET)
+- Active Internet Connection (for asset fetching)
 
-1. **Open the Browser**: Click the "AmbientCG" button at the top of the Godot editor.
-2. **Search Assets**: Use the search bar to find materials or HDRIs by keywords (e.g., "brick", "forest").
-3. **Filter**: Filter results by asset type using the dropdown menu.
-4. **Download**: Click on an asset to view details and select a resolution/format. Click "Download" to start the process.
-5. **Auto-Import**: Once downloaded, the plugin will automatically extract the files, create a `.tres` material or environment resource, and place it in your configured directories.
+## INSTALLATION
 
-## Configuration
+1. Download or clone this repository.
+2. Copy the `addons/ambientcg` folder into your project's `addons/` directory.
+3. Navigate to **Project Settings > Plugins** and enable **AmbientCG**.
 
-You can customize the plugin's behavior in **Project Settings** under the `ambientcg/` section:
+## USAGE
+
+1. **Launch**: Click the **AmbientCG** button at the top-center of the Godot editor.
+2. **Search**: Filter assets by keywords (e.g., "stone", "sky").
+3. **Download**: Select a resolution and format. The plugin handles ZIP extraction and cleanup automatically.
+4. **Integration**: Find your new `.tres` resources in the configured `res://ambientcg/` directories.
+
+## CONFIGURATION
+
+Adjust paths and behaviors in **Project Settings** under the `ambientcg/` section:
 
 | Setting | Default Value | Description |
 | :--- | :--- | :--- |
-| `ambientcg/extract_path` | `res://ambientcg/extracted` | Where raw asset files are extracted. |
-| `ambientcg/material_file_directory` | `res://ambientcg/materials` | Where generated Material resources are saved. |
-| `ambientcg/environment_file_directory` | `res://ambientcg/environments` | Where generated Environment resources are saved. |
-| `ambientcg/download_path` | `res://ambientcg/temp` | Temporary directory for ZIP downloads. |
+| `extract_path` | `res://ambientcg/extracted` | Destination for raw asset files. |
+| `material_file_directory` | `res://ambientcg/materials` | Where `.tres` materials are generated. |
+| `environment_file_directory` | `res://ambientcg/environments` | Where HDRI environments are saved. |
+| `download_path` | `res://ambientcg/temp` | Temporary storage for ZIP archives. |
 
-## Project Structure
+## CONTRIBUTING
 
-- `addons/ambientcg/core/`: Core logic including API communication, configuration, and parsing.
-- `addons/ambientcg/handlers/`: Logic for handling file operations and resource creation (Materials/Environments).
-- `addons/ambientcg/ui/`: UI components for the asset browser and detail views.
-- `addons/ambientcg/resources/`: Themes, icons, and other static assets.
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
-## Contributing
+> [!IMPORTANT]
+> When submitting PRs, ensure you test in both a 3D scene and an empty project to verify path creation logic.
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to set up the development environment and submit pull requests.
+## STONKS!
 
-### Developer Notes
+[![Star History Chart](https://api.star-history.com/svg?repos=AzPepoze/godot-ambientcg&type=Date)](https://star-history.com/#AzPepoze/godot-ambientcg&Date)
 
-- Substance Painter Materials are ignored by the material browser.
-- Several paths can be changed in Project Settings under `ambientcg/`.
-
-## License
-
-Distributed under the MIT License. See `LICENSE` for more information.
+<div align="center">
+  Made with ◈ by AzPepoze
+</div>
 
