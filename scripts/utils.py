@@ -10,11 +10,24 @@ def get_godot_command():
     env_godot = os.environ.get("GODOT")
     if env_godot:
         print(f"Debug: GODOT env var found: {env_godot}")
-        # On Windows, the env var might point to a symlink without .exe extension
-        if os.name == "nt" and not env_godot.lower().endswith(".exe"):
-            if os.path.exists(env_godot + ".exe"):
-                return env_godot + ".exe"
         
+        # On Windows, try to resolve to a .exe
+        if os.name == "nt":
+            # 1. Try adding .exe if it doesn't have it
+            if not env_godot.lower().endswith(".exe"):
+                if os.path.exists(env_godot + ".exe"):
+                    env_godot = env_godot + ".exe"
+            
+            # 2. Resolve symlinks
+            if os.path.exists(env_godot):
+                real_path = os.path.realpath(env_godot)
+                # 3. Again, ensure the real path has .exe if it doesn't
+                if not real_path.lower().endswith(".exe") and os.path.exists(real_path + ".exe"):
+                    real_path = real_path + ".exe"
+                
+                print(f"Debug: Resolved {env_godot} to {real_path}")
+                return real_path
+
         # If it's a direct path that exists, use it
         if os.path.exists(env_godot):
             return env_godot
@@ -28,7 +41,7 @@ def get_godot_command():
 
     # Try the default command
     if shutil.which("godot"):
-        return "godot"
+        return os.path.realpath(shutil.which("godot"))
     
     # On Windows, try common variations and locations if 'godot' isn't found directly
     if os.name == "nt":
@@ -38,7 +51,7 @@ def get_godot_command():
             found = shutil.which(name)
             if found:
                 print(f"Debug: Found '{name}' at {found}")
-                return name
+                return os.path.realpath(found)
 
         # Last ditch effort: check common runner binary paths and installation folders
         user_home = os.path.expanduser("~")
@@ -49,26 +62,23 @@ def get_godot_command():
         
         import glob
         for sdir in search_dirs:
-            print(f"Debug: Searching in {sdir}...")
             if not os.path.exists(sdir):
                 continue
             
             # Recursive search for anything starting with Godot and ending with .exe
-            # This handles the versioned names setup-godot uses
             pattern = os.path.join(sdir, "**", "Godot*.exe")
             matches = glob.glob(pattern, recursive=True)
             
-            # Filter out console/headless versions if main version exists, or just pick the first
             if matches:
-                # Prioritize non-console version
                 main_version = [m for m in matches if "_console.exe" not in m.lower()]
                 result = main_version[0] if main_version else matches[0]
-                print(f"Debug: Found Godot via recursive search: {result}")
-                return result
-        
-        print(f"Debug: FULL PATH: {os.environ.get('PATH')}")
+                real_result = os.path.realpath(result)
+                if not real_result.lower().endswith(".exe") and os.path.exists(real_result + ".exe"):
+                    real_result = real_result + ".exe"
+                print(f"Debug: Found Godot via recursive search: {real_result}")
+                return real_result
     
-    # Fallback to 'godot' and let it fail if not found
+    # Fallback to 'godot'
     return "godot"
 
 def run_command(command, description):
@@ -77,7 +87,13 @@ def run_command(command, description):
         command[0] = get_godot_command()
 
     print(f"=== {description} ===")
-    use_shell = os.name == "nt"
+    
+    # On Windows, if we have an absolute path, don't use shell=True to avoid cmd.exe extension issues
+    use_shell = False
+    if os.name == "nt":
+        if not os.path.isabs(command[0]):
+            use_shell = True
+            
     try:
         subprocess.run(command, check=True, text=True, shell=use_shell)
         return True
@@ -85,7 +101,7 @@ def run_command(command, description):
         print(f"\nError during {description}!")
         return False
     except FileNotFoundError:
-        print(f"\nError: Executable '{command[0]}' not found in PATH.")
+        print(f"\nError: Executable '{command[0]}' not found.")
         return False
 
 def get_latest_godot_version():

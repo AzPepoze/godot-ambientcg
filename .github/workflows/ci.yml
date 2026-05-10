@@ -62,6 +62,14 @@ jobs:
         with:
           version: ${{ steps.godot-version.outputs.version }}
 
+      - name: Debug Godot Paths
+        run: |
+          echo "Checking GODOT variable: $GODOT"
+          echo "Listing C:/Users/runneradmin/bin:"
+          ls -F C:/Users/runneradmin/bin || echo "Folder not found"
+          echo "Listing C:/Users/runneradmin/godot (recursive):"
+          ls -R C:/Users/runneradmin/godot || echo "Folder not found"
+
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
