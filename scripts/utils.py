@@ -22,14 +22,27 @@ def get_godot_command():
     if shutil.which("godot"):
         return "godot"
     
-    # On Windows, try common variations if 'godot' isn't found directly
+    # On Windows, try common variations and locations if 'godot' isn't found directly
     if os.name == "nt":
-        print(f"Debug: Scanning common Windows names. PATH: {os.environ.get('PATH')[:100]}...")
-        for name in ["godot.exe", "Godot", "godot4", "godot4.exe"]:
+        print(f"Debug: Scanning common Windows names.")
+        search_names = ["godot.exe", "Godot", "godot4", "godot4.exe"]
+        for name in search_names:
             found = shutil.which(name)
-            print(f"Debug: Checking '{name}': {'FOUND' if found else 'NOT FOUND'}")
             if found:
+                print(f"Debug: Found '{name}' at {found}")
                 return name
+
+        # Last ditch effort: check common runner binary paths
+        user_bin = os.path.join(os.path.expanduser("~"), "bin")
+        print(f"Debug: Checking user bin: {user_bin}")
+        if os.path.exists(user_bin):
+            for name in search_names:
+                full_path = os.path.join(user_bin, name)
+                if os.path.exists(full_path):
+                    print(f"Debug: Found Godot at {full_path}")
+                    return full_path
+        
+        print(f"Debug: FULL PATH: {os.environ.get('PATH')}")
     
     # Fallback to 'godot' and let it fail if not found
     return "godot"
