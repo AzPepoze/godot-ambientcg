@@ -35,8 +35,14 @@ def get_godot_command():
         print(f"Debug: GODOT env var '{env_godot}' not found on disk or in PATH.")
 
     # Try the default command
-    if shutil.which("godot"):
-        return os.path.realpath(shutil.which("godot"))
+    godot_path = shutil.which("godot")
+    if godot_path:
+        real_path = os.path.realpath(godot_path)
+        if os.name != "nt" or real_path.lower().endswith(".exe"):
+            return real_path
+        # On Windows, if we found a non-exe 'godot', try adding .exe
+        if os.name == "nt" and os.path.exists(real_path + ".exe"):
+            return real_path + ".exe"
     
     # On Windows, try common variations and locations if 'godot' isn't found directly
     if os.name == "nt":
@@ -45,8 +51,10 @@ def get_godot_command():
         for name in search_names:
             found = shutil.which(name)
             if found:
-                print(f"Debug: Found '{name}' at {found}")
-                return os.path.realpath(found)
+                real_found = os.path.realpath(found)
+                if real_found.lower().endswith(".exe"):
+                    print(f"Debug: Found '{name}' at {real_found}")
+                    return real_found
 
         # Last ditch effort: check common runner binary paths and installation folders
         user_home = os.path.expanduser("~")
@@ -60,16 +68,16 @@ def get_godot_command():
             if not os.path.exists(sdir):
                 continue
             
-            # Recursive search for anything starting with Godot and ending with .exe
-            pattern = os.path.join(sdir, "**", "Godot*.exe")
+            print(f"Debug: Recursively searching in {sdir}...")
+            # Use forward slashes for glob for better cross-platform behavior in Python
+            pattern = sdir.replace("\\", "/") + "/**/Godot*.exe"
             matches = glob.glob(pattern, recursive=True)
             
             if matches:
+                # Prioritize non-console version
                 main_version = [m for m in matches if "_console.exe" not in m.lower()]
                 result = main_version[0] if main_version else matches[0]
-                real_result = os.path.realpath(result)
-                if not real_result.lower().endswith(".exe") and os.path.exists(real_result + ".exe"):
-                    real_result = real_result + ".exe"
+                real_result = os.path.abspath(os.path.realpath(result))
                 print(f"Debug: Found Godot via recursive search: {real_result}")
                 return real_result
     
