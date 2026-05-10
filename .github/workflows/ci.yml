@@ -49,9 +49,7 @@ jobs:
 
       - name: Get Latest Godot Version
         id: godot-version
-        run: |
-          VERSION=$(python scripts/get_godot_version.py)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        run: python scripts/get_godot_version.py
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
