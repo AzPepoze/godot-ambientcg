@@ -9,24 +9,19 @@ def get_godot_command():
     # Try environment variable first (useful for custom CI setups)
     env_godot = os.environ.get("GODOT")
     if env_godot:
-        print(f"Debug: GODOT env var found: {env_godot}")
-        
-        # On Windows, try to resolve to a .exe
-        if os.name == "nt":
-            # 1. Try adding .exe if it doesn't have it
-            if not env_godot.lower().endswith(".exe"):
-                if os.path.exists(env_godot + ".exe"):
-                    env_godot = env_godot + ".exe"
-            
-            # 2. Resolve symlinks
+        # On Windows, ignore extensionless paths (like the symlink setup-godot creates)
+        if os.name == "nt" and not env_godot.lower().endswith(".exe"):
+            print(f"Debug: Ignoring extensionless GODOT env var: {env_godot}")
+        else:
             if os.path.exists(env_godot):
                 real_path = os.path.realpath(env_godot)
-                # 3. Again, ensure the real path has .exe if it doesn't
-                if not real_path.lower().endswith(".exe") and os.path.exists(real_path + ".exe"):
-                    real_path = real_path + ".exe"
+                if os.name == "nt" and not real_path.lower().endswith(".exe"):
+                     if os.path.exists(real_path + ".exe"):
+                         real_path = real_path + ".exe"
                 
-                print(f"Debug: Resolved {env_godot} to {real_path}")
-                return real_path
+                if real_path.lower().endswith(".exe") or os.name != "nt":
+                    print(f"Debug: Using Godot from env: {real_path}")
+                    return real_path
 
         # If it's a direct path that exists, use it
         if os.path.exists(env_godot):
