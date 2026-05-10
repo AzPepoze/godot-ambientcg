@@ -7,8 +7,9 @@ import shutil
 
 def run_command(command, description):
     print(f"=== {description} ===")
+    use_shell = os.name == "nt"
     try:
-        subprocess.run(command, check=True, text=True)
+        subprocess.run(command, check=True, text=True, shell=use_shell)
         return True
     except subprocess.CalledProcessError:
         print(f"\nError during {description}!")
