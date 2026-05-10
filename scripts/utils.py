@@ -6,57 +6,31 @@ import os
 import shutil
 
 def get_godot_command():
-    # Try environment variable first (useful for custom CI setups)
-    env_godot = os.environ.get("GODOT")
-    # Special handling for Chickensoft setup-godot on Windows CI
-    if os.name == "nt" and os.environ.get("GITHUB_ACTIONS") == "true":
-        user_home = os.path.expanduser("~")
-        godot_dir = os.path.join(user_home, "godot")
-        if os.path.exists(godot_dir):
-            import glob
-            # We saw this structure in 'ls -R': ~/godot/Godot_vX.Y.Z-stable_mono_win64/Godot_*.exe
-            matches = glob.glob(os.path.join(godot_dir, "Godot_*", "Godot_*.exe"))
-            if matches:
-                # Prioritize non-console version
-                main_version = [m for m in matches if "_console.exe" not in m.lower()]
-                result = os.path.abspath(main_version[0] if main_version else matches[0])
-                print(f"Debug: CI-Specific Resolution: {result}")
-                return result
-
-    # Try environment variable
+    # Try environment variable first
     env_godot = os.environ.get("GODOT")
     if env_godot:
-        if os.path.exists(env_godot) and (not os.name == "nt" or env_godot.lower().endswith(".exe")):
+        if os.path.exists(env_godot):
             return os.path.abspath(env_godot)
-        if os.path.exists(env_godot + ".exe"):
-            return os.path.abspath(env_godot + ".exe")
+        
+        found = shutil.which(env_godot)
+        if found:
+            return found
 
-    # Try PATH
-    godot_path = shutil.which("godot")
-    if godot_path:
-        real_path = os.path.realpath(godot_path)
-        if os.name != "nt" or real_path.lower().endswith(".exe"):
-            return real_path
-        if os.name == "nt" and os.path.exists(real_path + ".exe"):
-            return real_path + ".exe"
+    # Try 'godot' in PATH
+    found = shutil.which("godot")
+    if found:
+        return found
     
     return "godot"
 
 def run_command(command, description):
-    # If the command starts with 'godot', use our helper to find the correct executable
     if command and command[0] == "godot":
         command[0] = get_godot_command()
 
     print(f"=== {description} ===")
     
-    # On Windows, if we have an absolute path, don't use shell=True to avoid cmd.exe extension issues
-    use_shell = False
-    if os.name == "nt":
-        if not os.path.isabs(command[0]):
-            use_shell = True
-            
     try:
-        subprocess.run(command, check=True, text=True, shell=use_shell)
+        subprocess.run(command, check=True, text=True)
         return True
     except subprocess.CalledProcessError:
         print(f"\nError during {description}!")

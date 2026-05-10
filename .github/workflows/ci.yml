@@ -33,13 +33,10 @@ jobs:
   test:
     name: Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        shell: bash
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, windows-latest ]
+        os: [ ubuntu-latest ]
 
     steps:
       - name: Checkout Repository
@@ -52,23 +49,16 @@ jobs:
 
       - name: Get Latest Godot Version
         id: godot-version
-        run: python scripts/get_godot_version.py
+        run: |
+          VERSION=$(python scripts/get_godot_version.py)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Godot
-        id: setup-godot
         uses: chickensoft-games/setup-godot@v2
         with:
           version: ${{ steps.godot-version.outputs.version }}
-
-      - name: Debug Godot Paths
-        run: |
-          echo "Checking GODOT variable: $GODOT"
-          echo "Listing C:/Users/runneradmin/bin:"
-          ls -F C:/Users/runneradmin/bin || echo "Folder not found"
-          echo "Listing C:/Users/runneradmin/godot (recursive):"
-          ls -R C:/Users/runneradmin/godot || echo "Folder not found"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5

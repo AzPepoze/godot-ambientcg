@@ -60,6 +60,18 @@ Adjust paths and behaviors in **Project Settings** under the `ambientcg/` sectio
 | `material_file_directory` | `res://ambientcg/materials` | Where `.tres` materials are generated. |
 | `environment_file_directory` | `res://ambientcg/environments` | Where HDRI environments are saved. |
 | `download_path` | `res://ambientcg/temp` | Temporary storage for ZIP archives. |
+| `max_results` | `100` | Limits the number of assets fetched per search. |
+
+## DEVELOPMENT
+
+This project uses `uv` for development task management.
+
+- **Linting**: `uv run task lint`
+- **Formatting**: `uv run task format`
+- **Testing**: `uv run task test` (Requires Godot in PATH)
+
+> [!WARNING]
+> The automated test pipeline and local testing scripts are currently optimized for **Linux/Unix environments only**. Running tests on Windows is not supported at this time.
 
 ## CONTRIBUTING
 
