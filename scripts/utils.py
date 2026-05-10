@@ -10,10 +10,13 @@ def get_godot_command():
     env_godot = os.environ.get("GODOT")
     if env_godot:
         print(f"Debug: GODOT env var found: {env_godot}")
+        # If it's a direct path that exists, use it
+        if os.path.exists(env_godot):
+            return env_godot
+        # If it's in PATH, use it
         if shutil.which(env_godot):
             return env_godot
-        else:
-            print(f"Debug: shutil.which('{env_godot}') failed.")
+        print(f"Debug: GODOT env var '{env_godot}' not found on disk or in PATH.")
 
     # Try the default command
     if shutil.which("godot"):
