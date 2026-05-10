@@ -14,7 +14,6 @@ var _fetching_count: int = 0
 var _parsed_implementations: Array[Dictionary] = []
 var _last_request_id: int = 0
 
-
 @onready var asset_inspector: VBoxContainer = %AssetInspector
 @onready var sidebar_placeholder: CenterContainer = %SidebarPlaceholder
 @onready var asset_title: Label = %AssetTitle
@@ -67,7 +66,6 @@ func display_asset(asset: Dictionary) -> void:
 	else:
 		preview_rect.texture = null
 
-
 	var loader_label = Label.new()
 	loader_label.name = "LoaderLabel"
 	loader_label.text = "Fetching download sizes..."
@@ -90,7 +88,6 @@ func display_asset(asset: Dictionary) -> void:
 		_fetch_single_implementation(implementation_uris[qual], request_id)
 
 
-
 func _fetch_single_implementation(uri: String, request_id: int) -> void:
 	var impl_data = await AmbientCG.api.api_init_implementation(uri)
 
@@ -100,8 +97,6 @@ func _fetch_single_implementation(uri: String, request_id: int) -> void:
 	var parsed_impl = AmbientCG.Parser.parse_asset_implementation(impl_data)
 	if parsed_impl.size() > 0:
 		_parsed_implementations.append_array(parsed_impl)
-
-
 
 	_fetching_count -= 1
 	if _fetching_count <= 0:
@@ -212,7 +207,6 @@ func _load_preview(url: String, request_id: int) -> void:
 	if request_id != _last_request_id:
 		return
 
-
 	if response[1] == 200:
 		var headers: PackedStringArray = response[2]
 		var buffer: PackedByteArray = response[3]
@@ -240,6 +234,7 @@ func _on_download_started(_url: String, asset_name: String) -> void:
 	var item = DOWNLOAD_ITEM_SCENE.instantiate()
 	download_list.add_child(item)
 	item.setup(_url, asset_name)
+
 
 func _group_implementations(
 	implementations: Array[Dictionary], filter_ext: String, is_hdri: bool

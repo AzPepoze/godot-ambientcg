@@ -11,7 +11,6 @@ const Parser = preload("res://addons/ambientcg/core/ambient_parser.gd")
 const MaterialMaker = preload("res://addons/ambientcg/handlers/ambient_material_maker.gd")
 const EnvironmentMaker = preload("res://addons/ambientcg/handlers/ambient_environment_maker.gd")
 
-
 # Stateful sub-modules (Nodes)
 var signals: Node
 var logger: Node
@@ -32,8 +31,6 @@ func _initialize_modules() -> void:
 	logger = preload("res://addons/ambientcg/core/ambient_logger.gd").new()
 	api = preload("res://addons/ambientcg/core/ambient_api.gd").new()
 	file_handler = preload("res://addons/ambientcg/handlers/ambient_file_handler.gd").new()
-
-
 
 	# Give them names for easier debugging in the scene tree
 	signals.name = "Signals"
@@ -59,8 +56,6 @@ func _initialize_modules() -> void:
 	file_handler.set("api", api)
 	file_handler.set("material_maker", MaterialMaker)
 	file_handler.set("environment_maker", EnvironmentMaker)
-
-
 
 	# Add to tree
 	add_child(signals)

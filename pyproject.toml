@@ -14,8 +14,10 @@ dev = [
 
 [tool.taskipy.tasks]
 check = "python scripts/check.py"
-format = "gdformat addons/ tests/"
-lint = "gdlint addons/ tests/"
+format = "gdformat addons/ambientcg/ tests/"
+format-check = "gdformat --check addons/ambientcg/ tests/"
+lint = "gdlint addons/ambientcg/ tests/"
+test = "godot --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit"
 clean = "python scripts/clean.py"
 dev = "python scripts/dev.py"
 version = "python scripts/get_godot_version.py"

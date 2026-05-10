@@ -1,11 +1,11 @@
 extends GutTest
 
-var FILE_HANDLER_SCRIPT = load("res://addons/ambientcg/handlers/ambient_file_handler.gd")
+var AmbientFileHandler = load("res://addons/ambientcg/handlers/ambient_file_handler.gd")
 var _handler = null
 
 
 func before_each():
-	_handler = FILE_HANDLER_SCRIPT.new()
+	_handler = AmbientFileHandler.new()
 	_handler.signals = load("res://addons/ambientcg/core/ambient_signals.gd").new()
 	_handler.logger = load("res://addons/ambientcg/core/ambient_logger.gd").new()
 	_handler.api = load("res://addons/ambientcg/core/ambient_api.gd").new()
@@ -17,7 +17,9 @@ func before_each():
 	_handler.config = load("res://addons/ambientcg/core/ambient_config.gd")
 	_handler.utils = load("res://addons/ambientcg/utils/ambient_utils.gd")
 	_handler.material_maker = load("res://addons/ambientcg/handlers/ambient_material_maker.gd")
-	_handler.environment_maker = load("res://addons/ambientcg/handlers/ambient_environment_maker.gd")
+	_handler.environment_maker = load(
+		"res://addons/ambientcg/handlers/ambient_environment_maker.gd"
+	)
 
 	add_child(_handler)
 

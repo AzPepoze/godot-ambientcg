@@ -4,8 +4,13 @@ import subprocess
 from utils import run_command, ensure_gut
 
 def main():
+    format_success = run_command(
+        ["uv", "run", "task", "format-check"],
+        "Checking Formatting (gdformat)"
+    )
+
     lint_success = run_command(
-        ["uv", "tool", "run", "--from", "gdtoolkit", "gdlint", "addons/ambientcg"],
+        ["uv", "run", "task", "lint"],
         "Running Linting (gdlint)"
     )
     
@@ -13,16 +18,13 @@ def main():
     if ensure_gut():
         run_command(["godot", "--headless", "-e", "--quit"], "Indexing GUT Assets")
 
-    test_command = [
-        "godot", "--headless", "--path", ".",
-        "-s", "addons/gut/gut_cmdln.gd",
-        "-gdir=res://tests", "-ginclude_subdirs", "-gexit"
-    ]
-    
-    test_success = run_command(test_command, "Running Unit Tests (GUT)")
+    test_success = run_command(
+        ["uv", "run", "task", "test"],
+        "Running Unit Tests (GUT)"
+    )
 
     print("")
-    if lint_success and test_success:
+    if format_success and lint_success and test_success:
         print("=== Check Complete: ALL PASSED ===")
         sys.exit(0)
     else:

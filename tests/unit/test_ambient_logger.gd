@@ -1,11 +1,11 @@
 extends GutTest
 
-var LOGGER_SCRIPT = load("res://addons/ambientcg/core/ambient_logger.gd")
+var AmbientLogger = load("res://addons/ambientcg/core/ambient_logger.gd")
 var _logger = null
 
 
 func before_each():
-	_logger = LOGGER_SCRIPT.new()
+	_logger = AmbientLogger.new()
 	_logger.signals = load("res://addons/ambientcg/core/ambient_signals.gd").new()
 	_logger.add_child(_logger.signals)
 	add_child(_logger)

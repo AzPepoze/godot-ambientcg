@@ -110,7 +110,6 @@ static func parse_assets_from_search(list: Array) -> Array:
 		else:
 			asset_output["asset_type"] = "material"
 
-
 		output.append(asset_output)
 	return output
 

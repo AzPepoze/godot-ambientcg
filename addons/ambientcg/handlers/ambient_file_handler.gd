@@ -11,8 +11,6 @@ var material_maker: Script
 var environment_maker: Script
 
 
-
-
 func download_file_from_data(file_information: Dictionary, _source_window: Node) -> void:
 	check_dirs()
 	var download_path: String = config.get_setting(
@@ -46,7 +44,6 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 	if Engine.is_editor_hint() and is_instance_valid(EditorInterface):
 		file_sys = EditorInterface.get_resource_filesystem()
 
-
 	var reader := ZIPReader.new()
 	var err = reader.open(source_file)
 
@@ -77,7 +74,6 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 
 	var saved_files = _extract_zip_contents(reader, files, final_extract_path, options, file_sys)
 
-
 	_log_debug("Refreshing filesystem...")
 
 	if file_sys:
@@ -88,9 +84,7 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 
 	await _wait_for_import(saved_files, file_sys)
 
-
 	await _finalize_extraction(asset_name, saved_files, final_extract_path, options, file_sys)
-
 
 	_log_info("Success! Resources created and folders populated")
 
@@ -147,7 +141,6 @@ func _wait_for_import(files: PackedStringArray, file_sys: Variant) -> void:
 		timeout -= 0.5
 		if file_sys:
 			file_sys.scan()
-
 
 
 func confirm_file_path(_path: String, dialog_text: String) -> bool:
@@ -276,8 +269,12 @@ func _finalize_extraction(
 	file_sys: Variant
 ) -> void:
 	var is_hdri := asset_name.to_lower().contains("hdri")
-	var mat_dir: String = config.get_setting(config.SETTING_MATERIAL_DIR, config.DEFAULT_MATERIAL_DIR)
-	var env_dir: String = config.get_setting(config.SETTING_ENVIRONMENT_DIR, config.DEFAULT_ENVIRONMENT_DIR)
+	var mat_dir: String = config.get_setting(
+		config.SETTING_MATERIAL_DIR, config.DEFAULT_MATERIAL_DIR
+	)
+	var env_dir: String = config.get_setting(
+		config.SETTING_ENVIRONMENT_DIR, config.DEFAULT_ENVIRONMENT_DIR
+	)
 	var save_dir := env_dir if is_hdri else mat_dir
 
 	var mat_save_path: String = save_dir.path_join(asset_name + ".tres")

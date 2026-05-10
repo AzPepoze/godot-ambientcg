@@ -1,6 +1,6 @@
 extends GutTest
 
-var API_SCRIPT = load("res://addons/ambientcg/core/ambient_api.gd")
+var AmbientApi = load("res://addons/ambientcg/core/ambient_api.gd")
 var _api = null
 
 
@@ -16,7 +16,7 @@ class MockManager:
 
 
 func before_each():
-	_api = partial_double(API_SCRIPT).new()
+	_api = partial_double(AmbientApi).new()
 	_api.config = load("res://addons/ambientcg/core/ambient_config.gd")
 	_api.parser = load("res://addons/ambientcg/core/ambient_parser.gd")
 	_api.logger = load("res://addons/ambientcg/core/ambient_logger.gd").new()

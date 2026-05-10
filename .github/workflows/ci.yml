@@ -7,6 +7,29 @@ on:
     branches: [ main, master ]
 
 jobs:
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Run Linting
+        run: uv run task lint
+
+      - name: Run Format Check
+        run: uv run task format-check
+
   test:
     name: Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -27,6 +50,8 @@ jobs:
       - name: Get Latest Godot Version
         id: godot-version
         run: python scripts/get_godot_version.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Godot
         uses: chickensoft-games/setup-godot@v2
@@ -35,6 +60,8 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
 
-      - name: Run Dev Checks
-        run: uv run task check
+      - name: Run Unit Tests
+        run: uv run task test
