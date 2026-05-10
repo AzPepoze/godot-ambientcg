@@ -15,9 +15,6 @@ def main():
     )
     
     print("")
-    if ensure_gut():
-        run_command(["godot", "--headless", "-e", "--quit"], "Indexing GUT Assets")
-
     test_success = run_command(
         ["uv", "run", "task", "test"],
         "Running Unit Tests (GUT)"
