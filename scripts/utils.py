@@ -33,22 +33,38 @@ def get_godot_command():
     # On Windows, try common variations and locations if 'godot' isn't found directly
     if os.name == "nt":
         print(f"Debug: Scanning common Windows names.")
-        search_names = ["godot.exe", "Godot", "godot4", "godot4.exe"]
+        search_names = ["godot.exe", "Godot.exe", "godot4.exe", "Godot4.exe"]
         for name in search_names:
             found = shutil.which(name)
             if found:
                 print(f"Debug: Found '{name}' at {found}")
                 return name
 
-        # Last ditch effort: check common runner binary paths
-        user_bin = os.path.join(os.path.expanduser("~"), "bin")
-        print(f"Debug: Checking user bin: {user_bin}")
-        if os.path.exists(user_bin):
-            for name in search_names:
-                full_path = os.path.join(user_bin, name)
-                if os.path.exists(full_path):
-                    print(f"Debug: Found Godot at {full_path}")
-                    return full_path
+        # Last ditch effort: check common runner binary paths and installation folders
+        user_home = os.path.expanduser("~")
+        search_dirs = [
+            os.path.join(user_home, "bin"),
+            os.path.join(user_home, "godot")
+        ]
+        
+        import glob
+        for sdir in search_dirs:
+            print(f"Debug: Searching in {sdir}...")
+            if not os.path.exists(sdir):
+                continue
+            
+            # Recursive search for anything starting with Godot and ending with .exe
+            # This handles the versioned names setup-godot uses
+            pattern = os.path.join(sdir, "**", "Godot*.exe")
+            matches = glob.glob(pattern, recursive=True)
+            
+            # Filter out console/headless versions if main version exists, or just pick the first
+            if matches:
+                # Prioritize non-console version
+                main_version = [m for m in matches if "_console.exe" not in m.lower()]
+                result = main_version[0] if main_version else matches[0]
+                print(f"Debug: Found Godot via recursive search: {result}")
+                return result
         
         print(f"Debug: FULL PATH: {os.environ.get('PATH')}")
     
