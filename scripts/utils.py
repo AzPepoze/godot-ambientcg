@@ -10,12 +10,20 @@ def get_godot_command():
     env_godot = os.environ.get("GODOT")
     if env_godot:
         print(f"Debug: GODOT env var found: {env_godot}")
+        # On Windows, the env var might point to a symlink without .exe extension
+        if os.name == "nt" and not env_godot.lower().endswith(".exe"):
+            if os.path.exists(env_godot + ".exe"):
+                return env_godot + ".exe"
+        
         # If it's a direct path that exists, use it
         if os.path.exists(env_godot):
             return env_godot
+        
         # If it's in PATH, use it
-        if shutil.which(env_godot):
-            return env_godot
+        found = shutil.which(env_godot)
+        if found:
+            return found
+        
         print(f"Debug: GODOT env var '{env_godot}' not found on disk or in PATH.")
 
     # Try the default command
