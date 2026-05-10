@@ -8,8 +8,12 @@ import shutil
 def get_godot_command():
     # Try environment variable first (useful for custom CI setups)
     env_godot = os.environ.get("GODOT")
-    if env_godot and shutil.which(env_godot):
-        return env_godot
+    if env_godot:
+        print(f"Debug: GODOT env var found: {env_godot}")
+        if shutil.which(env_godot):
+            return env_godot
+        else:
+            print(f"Debug: shutil.which('{env_godot}') failed.")
 
     # Try the default command
     if shutil.which("godot"):
@@ -17,8 +21,11 @@ def get_godot_command():
     
     # On Windows, try common variations if 'godot' isn't found directly
     if os.name == "nt":
+        print(f"Debug: Scanning common Windows names. PATH: {os.environ.get('PATH')[:100]}...")
         for name in ["godot.exe", "Godot", "godot4", "godot4.exe"]:
-            if shutil.which(name):
+            found = shutil.which(name)
+            print(f"Debug: Checking '{name}': {'FOUND' if found else 'NOT FOUND'}")
+            if found:
                 return name
     
     # Fallback to 'godot' and let it fail if not found
