@@ -24,10 +24,13 @@ Search, download, and automatically import PBR materials and HDRI environments d
 
 ## SCREENSHOTS
 
-| Asset Browser | Material Detail |
-| :---: | :---: |
-| ![editor_screenshot](https://github.com/user-attachments/assets/dae775b1-250c-4b4a-9127-b34e7570f7eb) | ![material_import](https://github.com/user-attachments/assets/98fe5701-3e4a-4cdf-8d75-9ae8c52ef338) |
-| *Search and download assets via non-blocking background requests.* | *Automatic PBR mapping to Material3D and Environment resources.* |
+|           Asset Browser           |
+| :-----------------------------: |
+| ![Asset Browser](./docs/browser.png) |
+
+|          Plugin Settings          |
+| :-------------------------------: |
+| ![Plugin Settings](./docs/settings.png) |
 
 ## PREREQUISITES
 
@@ -60,7 +63,6 @@ Adjust paths and behaviors in **Project Settings** under the `ambientcg/` sectio
 | `material_file_directory` | `res://ambientcg/materials` | Where `.tres` materials are generated. |
 | `environment_file_directory` | `res://ambientcg/environments` | Where HDRI environments are saved. |
 | `download_path` | `res://ambientcg/temp` | Temporary storage for ZIP archives. |
-| `max_results` | `100` | Limits the number of assets fetched per search. |
 
 ## DEVELOPMENT
 
