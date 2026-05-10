@@ -5,7 +5,30 @@ import tarfile
 import os
 import shutil
 
+def get_godot_command():
+    # Try environment variable first (useful for custom CI setups)
+    env_godot = os.environ.get("GODOT")
+    if env_godot and shutil.which(env_godot):
+        return env_godot
+
+    # Try the default command
+    if shutil.which("godot"):
+        return "godot"
+    
+    # On Windows, try common variations if 'godot' isn't found directly
+    if os.name == "nt":
+        for name in ["godot.exe", "Godot", "godot4", "godot4.exe"]:
+            if shutil.which(name):
+                return name
+    
+    # Fallback to 'godot' and let it fail if not found
+    return "godot"
+
 def run_command(command, description):
+    # If the command starts with 'godot', use our helper to find the correct executable
+    if command and command[0] == "godot":
+        command[0] = get_godot_command()
+
     print(f"=== {description} ===")
     use_shell = os.name == "nt"
     try:
@@ -13,6 +36,9 @@ def run_command(command, description):
         return True
     except subprocess.CalledProcessError:
         print(f"\nError during {description}!")
+        return False
+    except FileNotFoundError:
+        print(f"\nError: Executable '{command[0]}' not found in PATH.")
         return False
 
 def get_latest_godot_version():
