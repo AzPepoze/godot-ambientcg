@@ -15,16 +15,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Update Version in Configs
+        run: |
+          # Strip leading 'v' from tag name for internal versioning
+          VERSION=${GITHUB_REF_NAME#v}
+          sed -i "s/version=\".*\"/version=\"$VERSION\"/" addons/ambientcg/plugin.cfg
+          sed -i "s/const VERSION = \".*\"/const VERSION = \"$VERSION\"/" addons/ambientcg/core/ambient_config.gd
+
       - name: Zip Addon
         run: |
-          cd addons
-          zip -r ../ambientcg-addon.zip ambientcg
-          cd ..
+          zip -r godot-ambientcg-${{ github.ref_name }}.zip addons/ambientcg
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ambientcg-addon.zip
+          files: godot-ambientcg-${{ github.ref_name }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
