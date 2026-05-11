@@ -1,10 +1,11 @@
 <div align="center">
-  
+  <img src="./addons/ambientcg/plugin_assets/icon/icon_white.png" width="128" height="128">
+
 # ✦ AmbientCG ✦
 
 Search, download, and automatically import PBR materials and HDRI environments directly from [ambientCG.com](https://ambientcg.com) into the Godot Engine.
 
-[![License](https://img.shields.io/badge/◈_LICENSE_◈-MIT-007bff.svg)](LICENSE)
+[![License](https://img.shields.io/badge/◈_LICENSE_◈-CC0_1.0-007bff.svg)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/AzPepoze/godot-ambientcg.svg?label=◈STARS◈&color=007bff)](https://github.com/AzPepoze/godot-ambientcg/stargazers)
 
 </div>
