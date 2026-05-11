@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://dkpndb638iog3"]
 
-[ext_resource type="Script" path="res://addons/ambientcg/ui/settings/settings.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://7nvyoy7wikxk" path="res://addons/ambientcg/ui/settings/settings.gd" id="1_script"]
 
 [node name="Settings" type="Control"]
 layout_mode = 3

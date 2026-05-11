@@ -5,7 +5,7 @@
 Search, download, and automatically import PBR materials and HDRI environments directly from [ambientCG.com](https://ambientcg.com) into the Godot Engine.
 
 [![License](https://img.shields.io/badge/◈_LICENSE_◈-MIT-007bff.svg)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/AzPepoze/godot-ambientcg.svg?label=◈_STARS_◈&color=007bff)](https://github.com/AzPepoze/godot-ambientcg/stargazers)
+[![Stars](https://img.shields.io/github/stars/AzPepoze/godot-ambientcg.svg?label=◈STARS◈&color=007bff)](https://github.com/AzPepoze/godot-ambientcg/stargazers)
 
 </div>
 
@@ -24,12 +24,12 @@ Search, download, and automatically import PBR materials and HDRI environments d
 
 ## SCREENSHOTS
 
-|           Asset Browser           |
-| :-----------------------------: |
+|            Asset Browser             |
+| :----------------------------------: |
 | ![Asset Browser](./docs/browser.png) |
 
-|          Plugin Settings          |
-| :-------------------------------: |
+|             Plugin Settings             |
+| :-------------------------------------: |
 | ![Plugin Settings](./docs/settings.png) |
 
 ## PREREQUISITES
@@ -37,7 +37,7 @@ Search, download, and automatically import PBR materials and HDRI environments d
 [!TIP]
 Ensure you are using a modern version of Godot 4 for the best compatibility.
 
-- **Godot Engine 4.0+** (Standard or .NET)
+- **Godot Engine 4.4+** (Standard or .NET)
 - Active Internet Connection (for asset fetching)
 
 ## INSTALLATION
@@ -57,12 +57,12 @@ Ensure you are using a modern version of Godot 4 for the best compatibility.
 
 Adjust paths and behaviors in **Project Settings** under the `ambientcg/` section:
 
-| Setting | Default Value | Description |
-| :--- | :--- | :--- |
-| `extract_path` | `res://ambientcg/extracted` | Destination for raw asset files. |
-| `material_file_directory` | `res://ambientcg/materials` | Where `.tres` materials are generated. |
-| `environment_file_directory` | `res://ambientcg/environments` | Where HDRI environments are saved. |
-| `download_path` | `res://ambientcg/temp` | Temporary storage for ZIP archives. |
+| Setting                      | Default Value                  | Description                            |
+| :--------------------------- | :----------------------------- | :------------------------------------- |
+| `extract_path`               | `res://ambientcg/extracted`    | Destination for raw asset files.       |
+| `material_file_directory`    | `res://ambientcg/materials`    | Where `.tres` materials are generated. |
+| `environment_file_directory` | `res://ambientcg/environments` | Where HDRI environments are saved.     |
+| `download_path`              | `res://ambientcg/temp`         | Temporary storage for ZIP archives.    |
 
 ## DEVELOPMENT
 
@@ -89,4 +89,3 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) to get started
 <div align="center">
   Made with ◈ by AzPepoze
 </div>
-

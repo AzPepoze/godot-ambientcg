@@ -1,6 +1,6 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=4 format=3 uid="uid://la5yvpkm26t5"]
 
-[ext_resource type="Script" path="res://addons/ambientcg/ui/browser/browser.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://dox3k648pwv44" path="res://addons/ambientcg/ui/browser/browser.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://bh5suxm427fn0" path="res://addons/ambientcg/plugin_assets/icon/Search.svg" id="2_icon"]
 [ext_resource type="PackedScene" path="res://addons/ambientcg/ui/sidebar/sidebar.tscn" id="3_sidebar"]
 
