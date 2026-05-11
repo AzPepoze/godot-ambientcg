@@ -11,7 +11,7 @@ Search, download, and automatically import PBR materials and HDRI environments d
 </div>
 
 > [!NOTE]
-> This project was forked from [VenitStudios/AmbientCG](https://github.com/VenitStudios/AmbientCG) to modernize the workflow for Godot 4.
+> This project was forked from [VenitStudios/AmbientCG](https://github.com/VenitStudios/AmbientCG).
 
 ## CONTENTS
 
@@ -34,9 +34,6 @@ Search, download, and automatically import PBR materials and HDRI environments d
 | ![Plugin Settings](./docs/settings.png) |
 
 ## PREREQUISITES
-
-[!TIP]
-Ensure you are using a modern version of Godot 4 for the best compatibility.
 
 - **Godot Engine 4.4+** (Standard or .NET)
 - Active Internet Connection (for asset fetching)
