@@ -3,7 +3,6 @@ extends Node
 
 const Config = preload("res://addons/ambientcg/core/ambient_config.gd")
 
-# Injected dependencies
 var signals: Node
 
 

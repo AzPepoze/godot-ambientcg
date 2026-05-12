@@ -1,9 +1,5 @@
 @tool
 
-# AmbientEnvironmentMaker
-# Utility class for creating Godot Environment and Sky resources from HDRI files.
-
-
 static func make_environment_resource(files: PackedStringArray) -> Environment:
 	var sky_res := Sky.new()
 	var sky_mat := PanoramaSkyMaterial.new()

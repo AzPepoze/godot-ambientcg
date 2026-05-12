@@ -84,7 +84,6 @@ func http_request_download(url: String, path: String, file_size: int) -> void:
 	while not request_status["finished"]:
 		var downloaded = http_request.get_downloaded_bytes()
 		if signals:
-			# Prevent UI math errors if downloaded bytes slightly exceed reported size
 			var actual_total = max(file_size, downloaded) if file_size > 0 else max(1, downloaded)
 			signals.download_progress_updated.emit(url, downloaded, actual_total)
 		await get_tree().create_timer(0.1).timeout
@@ -94,7 +93,6 @@ func http_request_download(url: String, path: String, file_size: int) -> void:
 
 	if request_status["success"]:
 		if signals:
-			# Force UI to 100%
 			signals.download_progress_updated.emit(url, file_size, file_size)
 			signals.download_completed.emit(path)
 	else:

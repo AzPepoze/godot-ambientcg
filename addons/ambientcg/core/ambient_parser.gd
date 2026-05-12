@@ -1,6 +1,4 @@
 @tool
-# AmbientParser
-# Utility class for parsing JSON data from the AmbientCG API.
 
 const UTILS = preload("res://addons/ambientcg/utils/ambient_utils.gd")
 const TEMP_FILE_PATH := "user://temp_acg_tres.tres"
@@ -32,19 +30,15 @@ static func parse_assets(json: Dictionary) -> Dictionary:
 		asset["id"] = asset_json.get("id", "")
 		asset["title"] = asset_json.get("title", "")
 
-		# Thumbnails
 		var thumbnails = asset_json.get("thumbnails", {})
-		# Prioritize PNG for thumbnails if available, otherwise WEBP
 		asset["thumbnail"] = thumbnails.get("128-PNG", thumbnails.get("128-WEBP", ""))
 
-		# Asset type
 		var asset_id = asset["id"].to_lower()
 		if asset_id.contains("hdri"):
 			asset["asset_type"] = "hdri"
 		else:
 			asset["asset_type"] = "material"
 
-		# Download data mapping
 		var downloads: Array = []
 		var implementation_uris: Dictionary = {}
 		for download_json in asset_json.get("downloads", []):
