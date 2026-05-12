@@ -4,16 +4,6 @@ extends GutTest
 var Parser = load("res://addons/ambientcg/core/ambient_parser.gd")
 
 
-func test_api_info_to_version_string_valid():
-	var mock_json = {"categories": ["Material"]}
-	var result = Parser.api_info_to_version_string(mock_json)
-	assert_string_contains(result, "ambientCG API")
-
-
-func test_api_info_to_version_string_empty():
-	assert_eq(Parser.api_info_to_version_string({}), "")
-
-
 func test_parse_assets_complex():
 	var mock_json = {
 		"totalResults": 1,

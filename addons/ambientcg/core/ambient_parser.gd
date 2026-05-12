@@ -6,13 +6,6 @@ const UTILS = preload("res://addons/ambientcg/utils/ambient_utils.gd")
 const TEMP_FILE_PATH := "user://temp_acg_tres.tres"
 
 
-static func api_info_to_version_string(json: Dictionary) -> String:
-	if json.is_empty():
-		return ""
-
-	return "ambientCG API\nHigh-quality materials and HDRIs via ambientCG.com"
-
-
 static func api_info_to_option_button(button: OptionButton, json: Dictionary) -> void:
 	button.clear()
 	button.add_item("Any")
@@ -23,7 +16,7 @@ static func api_info_to_option_button(button: OptionButton, json: Dictionary) ->
 		button.set_item_metadata(button.get_item_count() - 1, str(type).to_lower())
 
 
-static func parse_search_query_data(json: Dictionary, _api_info: Dictionary) -> Dictionary:
+static func parse_search_query_data(json: Dictionary) -> Dictionary:
 	return parse_assets(json)
 
 

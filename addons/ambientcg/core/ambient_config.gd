@@ -1,8 +1,5 @@
 @tool
 
-const PLUGIN_NAME = "AmbientCG"
-const VERSION = "1.0.0"
-
 const SETTING_DOWNLOAD_PATH = "ambientcg/download_path"
 const SETTING_EXTRACT_PATH = "ambientcg/extract_path"
 const SETTING_MATERIAL_DIR = "ambientcg/material_file_directory"
@@ -18,6 +15,8 @@ const BASE_DOMAIN = "https://ambientcg.com"
 
 const THEME_PATH = "res://addons/ambientcg/resources/themes/ambient_theme.tres"
 const ICON_PATH = "res://addons/ambientcg/resources/icons/"
+
+static var _cached_cfg: ConfigFile = null
 
 
 static func get_setting(key: String, default_value: Variant) -> Variant:
@@ -48,3 +47,24 @@ static func set_setting(key: String, value: Variant) -> void:
 			value = value.to_lower()
 	ProjectSettings.set_setting(key, value)
 	ProjectSettings.save()
+
+
+static func _get_plugin_cfg() -> ConfigFile:
+	if _cached_cfg:
+		return _cached_cfg
+	var config = ConfigFile.new()
+	var err = config.load("res://addons/ambientcg/plugin.cfg")
+	if err == OK:
+		_cached_cfg = config
+		return _cached_cfg
+	return null
+
+
+static func get_plugin_version() -> String:
+	var cfg = _get_plugin_cfg()
+	return cfg.get_value("plugin", "version", "0.0.0") if cfg else "0.0.0"
+
+
+static func get_plugin_name() -> String:
+	var cfg = _get_plugin_cfg()
+	return cfg.get_value("plugin", "name", "AmbientCG") if cfg else "AmbientCG"

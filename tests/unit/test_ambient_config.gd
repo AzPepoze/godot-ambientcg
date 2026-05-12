@@ -8,8 +8,9 @@ func test_get_setting_default():
 	assert_eq(val, "default")
 
 
-func test_constants_not_empty():
-	assert_ne(Config.PLUGIN_NAME, "")
+func test_plugin_info():
+	assert_ne(Config.get_plugin_name(), "")
+	assert_ne(Config.get_plugin_version(), "")
 	assert_ne(Config.HOME_URL, "")
 	assert_ne(Config.BASE_DOMAIN, "")
 

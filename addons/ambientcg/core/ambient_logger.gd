@@ -9,7 +9,7 @@ var signals: Node
 
 func _log(message: String, category: String, level: String) -> void:
 	var time = Time.get_time_string_from_system()
-	print("%s [%s] [%s] [%s] %s" % [Config.PLUGIN_NAME, time, level, category, message])
+	print("%s [%s] [%s] [%s] %s" % [Config.get_plugin_name(), time, level, category, message])
 
 
 func info(message: String, category: String = "General") -> void:

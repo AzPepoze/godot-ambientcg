@@ -147,12 +147,13 @@ text = "Cancel Search"
 [node name="Footer" type="HBoxContainer" parent="HSplit/MainPanel"]
 layout_mode = 2
 
-[node name="APIVersionInfo" type="Label" parent="HSplit/MainPanel/Footer"]
+[node name="PluginVersion" type="Label" parent="HSplit/MainPanel/Footer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 12
-text = "Fetching API Information"
+text = "AmbientCG v0.1.0"
+
 
 [node name="SearchingIndicator" type="Label" parent="HSplit/MainPanel/Footer"]
 unique_name_in_owner = true

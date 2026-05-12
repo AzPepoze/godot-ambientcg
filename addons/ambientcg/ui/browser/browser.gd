@@ -15,7 +15,7 @@ var awaiting_search_finish: bool = false
 var v_scroll_bar: VScrollBar
 @onready var sidebar: Control = %Sidebar
 @onready var search_result_count: Label = %SearchResultCount
-@onready var api_version_info_label: Label = %APIVersionInfo
+@onready var plugin_version_label: Label = %PluginVersion
 @onready var type_options: OptionButton = %TypeOptions
 @onready var resolution_options: OptionButton = %ResolutionOptions
 @onready var sort_options: OptionButton = %SortOptions
@@ -35,6 +35,7 @@ var v_scroll_bar: VScrollBar
 func _ready() -> void:
 	setup_filters()
 	init_browser()
+	_update_version_display()
 
 	type_options.item_selected.connect(_on_filter_changed)
 	resolution_options.item_selected.connect(_on_filter_changed)
@@ -102,7 +103,6 @@ func init_browser():
 		_show_error("Error: Could not connect to API")
 		return
 
-	api_version_info_label.text = ambient_cg.Parser.api_info_to_version_string(info)
 	ambient_cg.Parser.api_info_to_option_button(type_options, info)
 	search(search_bar.text)
 
@@ -158,7 +158,7 @@ func search(query: String = "", use_next: bool = false):
 	if result.is_empty():
 		return
 
-	var parsed = ambient_cg.Parser.parse_search_query_data(result, ambient_cg.api_information)
+	var parsed = ambient_cg.Parser.parse_search_query_data(result)
 
 	next_query_uri = parsed.get("next_query_uri", "")
 	var assets = parsed.get("assets", [])
@@ -222,3 +222,7 @@ func _add_asset_widget(asset: Dictionary) -> void:
 	var widget = BROWSER_WIDGET.instantiate()
 	search_grid.add_child(widget)
 	widget.setup(asset, owner, self)
+
+
+func _update_version_display():
+	plugin_version_label.text = CONFIG.get_plugin_name() + " v" + CONFIG.get_plugin_version()
