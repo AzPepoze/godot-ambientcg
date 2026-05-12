@@ -5,8 +5,8 @@ from utils import run_command, ensure_gut
 
 def main():
     format_success = run_command(
-        ["uv", "run", "task", "format-check"],
-        "Checking Formatting (gdformat)"
+        ["uv", "run", "task", "format"],
+        "Formatting Code (gdformat)"
     )
 
     lint_success = run_command(

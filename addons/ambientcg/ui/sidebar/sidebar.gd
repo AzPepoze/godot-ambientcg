@@ -10,7 +10,6 @@ const UI_HELPERS = preload("res://addons/ambientcg/utils/ui_helpers.gd")
 var current_asset_id: String = ""
 var asset_data: Dictionary = {}
 
-var _fetching_count: int = 0
 var _parsed_implementations: Array[Dictionary] = []
 var _last_request_id: int = 0
 
@@ -22,6 +21,8 @@ var _last_request_id: int = 0
 @onready var download_list: VBoxContainer = %DownloadList
 @onready var zip_radio: CheckBox = %ZipRadio
 @onready var usdz_radio: CheckBox = %UsdzRadio
+@onready var id_edit: LineEdit = %IdEdit
+@onready var load_button: Button = %LoadButton
 
 
 func _ready() -> void:
@@ -32,6 +33,8 @@ func _ready() -> void:
 		ambient_cg.signals.download_started.connect(_on_download_started)
 	zip_radio.toggled.connect(_on_container_changed)
 	usdz_radio.toggled.connect(_on_container_changed)
+	id_edit.text_submitted.connect(_on_manual_id_submitted)
+	load_button.pressed.connect(func(): _on_manual_id_submitted(id_edit.text))
 
 
 func display_asset(asset: Dictionary) -> void:
@@ -68,44 +71,18 @@ func display_asset(asset: Dictionary) -> void:
 	else:
 		preview_rect.texture = null
 
-	var loader_label = Label.new()
-	loader_label.name = "LoaderLabel"
-	loader_label.text = "Fetching download sizes..."
-	loader_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	groups_container.add_child(loader_label)
-
 	sidebar_placeholder.hide()
 	asset_inspector.show()
 
 	_parsed_implementations.clear()
-	var implementation_uris = asset_data.get("implementation_uris", {})
-	_fetching_count = implementation_uris.size()
-
-	if _fetching_count == 0:
-		loader_label.text = "No downloads available."
-		return
-
-	for qual in implementation_uris.keys():
-		_fetch_single_implementation(implementation_uris[qual], request_id)
-
-
-func _fetch_single_implementation(uri: String, request_id: int) -> void:
-	var ambient_cg = CONFIG.get_instance(self)
-	if not ambient_cg:
-		return
-
-	var impl_data = await ambient_cg.api.api_init_implementation(uri)
-
-	if request_id != _last_request_id:
-		return
-
-	var parsed_impl = ambient_cg.Parser.parse_asset_implementation(impl_data)
-	if parsed_impl.size() > 0:
-		_parsed_implementations.append_array(parsed_impl)
-
-	_fetching_count -= 1
-	if _fetching_count <= 0:
+	if asset_data.has("download_data"):
+		_parsed_implementations.append_array(asset_data["download_data"])
 		_build_download_ui()
+	else:
+		var err_label = Label.new()
+		err_label.text = "No download data available."
+		err_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		groups_container.add_child(err_label)
 
 
 func _on_container_changed(_toggled: bool):
@@ -249,3 +226,39 @@ func _group_implementations(
 			grouped["Other"].append(opt)
 
 	return grouped
+
+
+func _on_manual_id_submitted(id: String) -> void:
+	if id.is_empty():
+		return
+
+	var ambient_cg = CONFIG.get_instance(self)
+	if not ambient_cg:
+		return
+
+	# Show placeholder/loading state
+	asset_inspector.hide()
+	sidebar_placeholder.show()
+	var placeholder_label = sidebar_placeholder.get_node("Label")
+	var original_text = placeholder_label.text
+	placeholder_label.text = "Fetching asset %s..." % id
+
+	var result = await ambient_cg.api.search_assets("", "Any", "", id)
+	var parsed = ambient_cg.Parser.parse_search_query_data(result, ambient_cg.api_information)
+	var assets = parsed.get("assets", [])
+
+	if assets.is_empty():
+		placeholder_label.text = "Asset '%s' not found." % id
+		await get_tree().create_timer(3.0).timeout
+		placeholder_label.text = original_text
+		return
+
+	# Find exact match or just take the first one
+	var found_asset = assets[0]
+	for a in assets:
+		if a.get("id", "").to_lower() == id.to_lower():
+			found_asset = a
+			break
+
+	display_asset(found_asset)
+	placeholder_label.text = original_text

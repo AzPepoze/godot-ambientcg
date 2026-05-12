@@ -13,7 +13,7 @@ const DEFAULT_EXTRACT_PATH = "res://ambientcg/extracted"
 const DEFAULT_MATERIAL_DIR = "res://ambientcg/materials"
 const DEFAULT_ENVIRONMENT_DIR = "res://ambientcg/environments"
 
-const HOME_URL = "https://ambientcg.com/api/af/"
+const HOME_URL = "https://ambientcg.com/api/v3/"
 const BASE_DOMAIN = "https://ambientcg.com"
 
 const THEME_PATH = "res://addons/ambientcg/resources/themes/ambient_theme.tres"

@@ -6,13 +6,7 @@ var _api = null
 
 class MockManager:
 	extends Node
-	var api_information: Dictionary = {
-		"data":
-		{
-			"asset_list_query":
-			{"uri": "https://api.test/list", "parameters": [{"id": "q", "type": "text"}]}
-		}
-	}
+	var api_information: Dictionary = {"categories": ["Material", "HDRI"]}
 
 
 func before_each():

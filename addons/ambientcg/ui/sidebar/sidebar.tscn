@@ -37,6 +37,22 @@ theme_override_constants/margin_bottom = 10
 layout_mode = 2
 theme_override_constants/separation = 15
 
+[node name="ManualIdInput" type="HBoxContainer" parent="VSplit/InspectorScroll/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="IdEdit" type="LineEdit" parent="VSplit/InspectorScroll/Margin/VBox/ManualIdInput"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Enter Asset ID..."
+alignment = 1
+
+[node name="LoadButton" type="Button" parent="VSplit/InspectorScroll/Margin/VBox/ManualIdInput"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Load"
+
 [node name="AssetInspector" type="VBoxContainer" parent="VSplit/InspectorScroll/Margin/VBox"]
 unique_name_in_owner = true
 visible = false

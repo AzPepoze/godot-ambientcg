@@ -25,6 +25,11 @@ var v_scroll_bar: VScrollBar
 @onready var searching_indicator: Label = %SearchingIndicator
 @onready var status_overlay: CenterContainer = %StatusOverlay
 @onready var status_label: Label = %StatusLabel
+@onready var search_button: Button = %SearchButton
+@onready var cancel_button: Button = %OverlayCancelButton
+@onready var loading_spinner: TextureRect = %LoadingSpinner
+@onready var debounce_timer: Timer = %DebounceTimer
+@onready var timeout_timer: Timer = %TimeoutTimer
 
 
 func _ready() -> void:
@@ -35,13 +40,38 @@ func _ready() -> void:
 	resolution_options.item_selected.connect(_on_filter_changed)
 	sort_options.item_selected.connect(_on_filter_changed)
 	search_bar.text_submitted.connect(func(_text): search(search_bar.text))
+	search_bar.text_changed.connect(_on_search_text_changed)
+	search_button.pressed.connect(func(): search(search_bar.text))
+	cancel_button.pressed.connect(cancel_search)
+	debounce_timer.timeout.connect(func(): search(search_bar.text))
+	timeout_timer.timeout.connect(_on_timeout)
 
 
 func _on_filter_changed(_index: int = 0) -> void:
-	type_text = type_options.get_item_text(type_options.selected)
+	var meta = type_options.get_item_metadata(type_options.selected)
+	type_text = str(meta) if meta != null and str(meta) != "" else "Any"
 	resolution_text = resolution_options.get_item_text(resolution_options.selected)
 	sort_text = sort_options.get_item_text(sort_options.selected)
 	search(search_bar.text)
+
+
+func _on_search_text_changed(_new_text: String) -> void:
+	debounce_timer.start()
+
+
+func cancel_search() -> void:
+	var ambient_cg = CONFIG.get_instance(self)
+	if ambient_cg:
+		ambient_cg.api.cancel_current_search()
+	_on_search_finished(true)
+
+
+func _on_timeout() -> void:
+	var ambient_cg = CONFIG.get_instance(self)
+	if ambient_cg:
+		ambient_cg.api.cancel_current_search()
+	_on_search_finished()
+	_show_error("Search timed out. Please try again.")
 
 
 func setup_filters():
@@ -77,7 +107,10 @@ func init_browser():
 	search(search_bar.text)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if loading_spinner and loading_spinner.visible:
+		loading_spinner.rotation += delta * 6.0
+
 	if not visible:
 		return
 	if v_scroll_bar == null:
@@ -96,18 +129,35 @@ func _process(_delta: float) -> void:
 func search(query: String = "", use_next: bool = false):
 	if awaiting_search_finish:
 		return
+
 	var ambient_cg = CONFIG.get_instance(self)
 	if not ambient_cg:
 		return
+
+	debounce_timer.stop()
 	awaiting_search_finish = true
+	cancel_button.visible = true
+	search_button.disabled = true
+	timeout_timer.start()
+
+	if searching_indicator:
+		searching_indicator.text = "Loading more..." if use_next else "Searching..."
 
 	if not use_next:
 		_show_status("Searching...")
+		loading_spinner.visible = true
+		cancel_button.visible = true
 		_clear_search_grid()
 
 	var result = await ambient_cg.api.search_assets(
 		query, type_text, next_query_uri if use_next else ""
 	)
+
+	_on_search_finished()
+
+	if result.is_empty():
+		return
+
 	var parsed = ambient_cg.Parser.parse_search_query_data(result, ambient_cg.api_information)
 
 	next_query_uri = parsed.get("next_query_uri", "")
@@ -125,7 +175,16 @@ func search(query: String = "", use_next: bool = false):
 	if status_overlay.visible:
 		status_label.text = "No Results Found"
 
+
+func _on_search_finished(cancelled: bool = false) -> void:
 	awaiting_search_finish = false
+	loading_spinner.visible = false
+	cancel_button.visible = false
+	search_button.disabled = false
+	timeout_timer.stop()
+
+	if cancelled:
+		_show_status("Search cancelled.")
 
 
 func display_asset_details(asset: Dictionary):
