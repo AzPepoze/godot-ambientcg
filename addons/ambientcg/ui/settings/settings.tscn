@@ -81,3 +81,20 @@ text = "Download Temp Folder"
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="LabelAsk" type="Label" parent="Scroll/Margin/VBox/Grid"]
+layout_mode = 2
+text = "Ask before download"
+
+[node name="AskBeforeDownload" type="CheckBox" parent="Scroll/Margin/VBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+
+[node name="SaveButton" type="Button" parent="Scroll/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/content_margin_left = 30
+theme_override_constants/content_margin_right = 30
+text = "Save Settings"

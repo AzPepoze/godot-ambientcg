@@ -4,6 +4,7 @@ const SETTING_DOWNLOAD_PATH = "ambientcg/download_path"
 const SETTING_EXTRACT_PATH = "ambientcg/extract_path"
 const SETTING_MATERIAL_DIR = "ambientcg/material_file_directory"
 const SETTING_ENVIRONMENT_DIR = "ambientcg/environment_file_directory"
+const SETTING_ASK_BEFORE_DOWNLOAD = "ambientcg/ask_before_download"
 
 const DEFAULT_DOWNLOAD_PATH = "res://ambientcg/temp"
 const DEFAULT_EXTRACT_PATH = "res://ambientcg/extracted"
@@ -40,7 +41,8 @@ static func set_setting(key: String, value: Variant) -> void:
 			SETTING_DOWNLOAD_PATH,
 			SETTING_EXTRACT_PATH,
 			SETTING_MATERIAL_DIR,
-			SETTING_ENVIRONMENT_DIR
+			SETTING_ENVIRONMENT_DIR,
+			SETTING_ASK_BEFORE_DOWNLOAD
 		]
 	):
 		if typeof(value) == TYPE_STRING:

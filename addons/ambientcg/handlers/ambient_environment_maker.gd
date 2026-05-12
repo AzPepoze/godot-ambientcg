@@ -1,5 +1,6 @@
 @tool
 
+
 static func make_environment_resource(files: PackedStringArray) -> Environment:
 	var sky_res := Sky.new()
 	var sky_mat := PanoramaSkyMaterial.new()

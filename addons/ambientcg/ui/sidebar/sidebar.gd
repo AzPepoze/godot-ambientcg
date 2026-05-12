@@ -244,7 +244,7 @@ func _on_manual_id_submitted(id: String) -> void:
 	placeholder_label.text = "Fetching asset %s..." % id
 
 	var result = await ambient_cg.api.search_assets("", "Any", "", id)
-	var parsed = ambient_cg.Parser.parse_search_query_data(result, ambient_cg.api_information)
+	var parsed = ambient_cg.Parser.parse_search_query_data(result)
 	var assets = parsed.get("assets", [])
 
 	if assets.is_empty():

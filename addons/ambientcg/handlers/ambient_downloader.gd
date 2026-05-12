@@ -22,7 +22,10 @@ func download_file_from_data(file_information: Dictionary, _source_window: Node)
 		% [path, utils.format_file_size(file_information.get("file_size", 0))]
 	)
 
-	var confirmed = await confirm_file_path(path, text)
+	var confirmed = true
+	if config.get_setting(config.SETTING_ASK_BEFORE_DOWNLOAD, true):
+		confirmed = await confirm_file_path(path, text)
+
 	if not confirmed:
 		_log_info("Download cancelled by user.")
 		return
