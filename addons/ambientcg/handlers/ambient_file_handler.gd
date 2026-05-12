@@ -1,7 +1,6 @@
 @tool
 extends Node
 
-# Injected dependencies
 var config: Script
 var utils: Script
 var logger: Node
@@ -40,17 +39,9 @@ func download_file_from_data(file_information: Dictionary, _source_window: Node)
 func extract_all(source_file: String, target_path: String = "", options: Dictionary = {}) -> void:
 	_log_info("Starting automatic extraction for: %s" % source_file)
 
-	var file_sys = null
-	if Engine.is_editor_hint() and is_instance_valid(EditorInterface):
-		file_sys = EditorInterface.get_resource_filesystem()
-
-	var reader := ZIPReader.new()
-	var err = reader.open(source_file)
-
-	if err != OK:
-		_log_error("Failed to open ZIP file: %d" % err)
-		if signals:
-			signals.extraction_failed.emit(source_file.get_file(), "Failed to open ZIP")
+	var file_sys = _get_filesystem()
+	var reader = _open_zip_reader(source_file)
+	if not reader:
 		return
 
 	var files = reader.get_files()
@@ -58,15 +49,11 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 
 	var extraction_path = await _get_extraction_path(target_path)
 	if extraction_path.is_empty():
+		reader.close()
 		return
 
-	_log_info("Extracting everything to: %s" % extraction_path)
-
-	var asset_name: String = source_file.get_file().get_basename()
-	var final_extract_path: String = extraction_path.path_join(asset_name)
-
-	if signals:
-		signals.extraction_started.emit(asset_name)
+	var final_extract_path = _prepare_extraction_path(extraction_path, source_file)
+	_emit_extraction_started(source_file.get_file().get_basename())
 
 	if DirAccess.dir_exists_absolute(final_extract_path):
 		_log_debug("Cleaning up old folder: %s" % final_extract_path)
@@ -75,21 +62,18 @@ func extract_all(source_file: String, target_path: String = "", options: Diction
 	var saved_files = _extract_zip_contents(reader, files, final_extract_path, options, file_sys)
 
 	_log_debug("Refreshing filesystem...")
-
-	if file_sys:
-		file_sys.scan()
-		file_sys.scan_sources()
+	_refresh_filesystem(file_sys)
 
 	reader.close()
 
 	await _wait_for_import(saved_files, file_sys)
-
-	await _finalize_extraction(asset_name, saved_files, final_extract_path, options, file_sys)
+	await _finalize_extraction(
+		source_file.get_file().get_basename(), saved_files, final_extract_path, options, file_sys
+	)
 
 	_log_info("Success! Resources created and folders populated")
 
-	if signals:
-		signals.extraction_completed.emit(asset_name, {"path": final_extract_path})
+	_emit_extraction_completed(source_file.get_file().get_basename(), final_extract_path)
 	DirAccess.remove_absolute(source_file)
 
 
@@ -317,3 +301,43 @@ func check_dirs() -> void:
 	]
 	for p in paths:
 		utils.ensure_dir(p)
+
+
+func _get_filesystem() -> Variant:
+	if Engine.is_editor_hint() and is_instance_valid(EditorInterface):
+		return EditorInterface.get_resource_filesystem()
+	return null
+
+
+func _open_zip_reader(source_file: String) -> ZIPReader:
+	var reader := ZIPReader.new()
+	var err = reader.open(source_file)
+
+	if err != OK:
+		_log_error("Failed to open ZIP file: %d" % err)
+		if signals:
+			signals.extraction_failed.emit(source_file.get_file(), "Failed to open ZIP")
+		return null
+
+	return reader
+
+
+func _prepare_extraction_path(extraction_path: String, source_file: String) -> String:
+	var asset_name: String = source_file.get_file().get_basename()
+	return extraction_path.path_join(asset_name)
+
+
+func _emit_extraction_started(asset_name: String) -> void:
+	if signals:
+		signals.extraction_started.emit(asset_name)
+
+
+func _refresh_filesystem(file_sys: Variant) -> void:
+	if file_sys:
+		file_sys.scan()
+		file_sys.scan_sources()
+
+
+func _emit_extraction_completed(asset_name: String, final_extract_path: String) -> void:
+	if signals:
+		signals.extraction_completed.emit(asset_name, {"path": final_extract_path})

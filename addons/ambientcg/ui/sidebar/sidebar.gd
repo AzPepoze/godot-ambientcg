@@ -5,11 +5,11 @@ const DOWNLOAD_ITEM_SCENE = preload(
 	"res://addons/ambientcg/ui/components/download/download_item.tscn"
 )
 const CONFIG = preload("res://addons/ambientcg/core/ambient_config.gd")
+const UI_HELPERS = preload("res://addons/ambientcg/utils/ui_helpers.gd")
 
 var current_asset_id: String = ""
 var asset_data: Dictionary = {}
 
-# Variables for the fetched implementations
 var _fetching_count: int = 0
 var _parsed_implementations: Array[Dictionary] = []
 var _last_request_id: int = 0
@@ -27,8 +27,9 @@ var _last_request_id: int = 0
 func _ready() -> void:
 	asset_inspector.hide()
 	sidebar_placeholder.show()
-	if CONFIG.is_plugin_enabled():
-		AmbientCG.signals.download_started.connect(_on_download_started)
+	var ambient_cg = CONFIG.get_instance(self)
+	if ambient_cg:
+		ambient_cg.signals.download_started.connect(_on_download_started)
 	zip_radio.toggled.connect(_on_container_changed)
 	usdz_radio.toggled.connect(_on_container_changed)
 
@@ -36,7 +37,6 @@ func _ready() -> void:
 func display_asset(asset: Dictionary) -> void:
 	var new_asset_id = asset.get("id", "")
 
-	# Skip re-fetching if the user clicked the exact same asset again
 	if current_asset_id == new_asset_id and not current_asset_id.is_empty():
 		asset_inspector.show()
 		sidebar_placeholder.hide()
@@ -52,8 +52,9 @@ func display_asset(asset: Dictionary) -> void:
 	asset_data = asset
 
 	if asset_data.is_empty():
-		if CONFIG.is_plugin_enabled():
-			AmbientCG.logger.error("Failed to fetch asset details", "UI")
+		var ambient_cg = CONFIG.get_instance(self)
+		if ambient_cg:
+			ambient_cg.logger.error("Failed to fetch asset details", "UI")
 		return
 
 	asset_title.text = current_asset_id
@@ -61,7 +62,6 @@ func display_asset(asset: Dictionary) -> void:
 	_last_request_id += 1
 	var request_id = _last_request_id
 
-	# Try to get thumbnail (some API formats might use different keys)
 	var thumbnail_url = asset_data.get("thumbnail", "")
 	if not thumbnail_url.is_empty():
 		_load_preview(thumbnail_url, request_id)
@@ -77,7 +77,6 @@ func display_asset(asset: Dictionary) -> void:
 	sidebar_placeholder.hide()
 	asset_inspector.show()
 
-	# Start fetching implementations
 	_parsed_implementations.clear()
 	var implementation_uris = asset_data.get("implementation_uris", {})
 	_fetching_count = implementation_uris.size()
@@ -91,15 +90,16 @@ func display_asset(asset: Dictionary) -> void:
 
 
 func _fetch_single_implementation(uri: String, request_id: int) -> void:
-	if not CONFIG.is_plugin_enabled():
+	var ambient_cg = CONFIG.get_instance(self)
+	if not ambient_cg:
 		return
-	
-	var impl_data = await AmbientCG.api.api_init_implementation(uri)
+
+	var impl_data = await ambient_cg.api.api_init_implementation(uri)
 
 	if request_id != _last_request_id:
 		return
 
-	var parsed_impl = AmbientCG.Parser.parse_asset_implementation(impl_data)
+	var parsed_impl = ambient_cg.Parser.parse_asset_implementation(impl_data)
 	if parsed_impl.size() > 0:
 		_parsed_implementations.append_array(parsed_impl)
 
@@ -116,7 +116,7 @@ func _on_container_changed(_toggled: bool):
 func _build_download_ui() -> void:
 	if not CONFIG.is_plugin_enabled():
 		return
-	
+
 	for c in groups_container.get_children():
 		c.queue_free()
 
@@ -167,20 +167,26 @@ func _build_download_ui() -> void:
 		for i in range(list.size()):
 			var opt = list[i]
 			var btn = Button.new()
-			var file_size = AmbientCG.Utils.format_file_size(opt.get("file_size", 0)) if CONFIG.is_plugin_enabled() else str(opt.get("file_size", 0)) + " bytes"
-			# Show resolution like "1K" and the file size nicely
-			btn.text = (
-				opt.get("local_file_name", "").replace("." + filter_ext, "").replace(
-					current_asset_id + "_", ""
+			var ambient_cg = CONFIG.get_instance(self)
+			if ambient_cg:
+				var file_size = ambient_cg.Utils.format_file_size(opt.get("file_size", 0))
+				btn.text = (
+					opt.get("local_file_name", "").replace("." + filter_ext, "").replace(
+						current_asset_id + "_", ""
+					)
+					+ " ("
+					+ file_size
+					+ ")"
 				)
-				+ " ("
-				+ file_size
-				+ ")"
-			)
-			btn.add_theme_font_size_override("font_size", 11)
-			btn.custom_minimum_size = Vector2(100, 30)
-			if CONFIG.is_plugin_enabled():
-				btn.pressed.connect(func(): AmbientCG.file_handler.download_file_from_data(opt, self))
+				btn.add_theme_font_size_override("font_size", 11)
+				btn.custom_minimum_size = Vector2(100, 30)
+				btn.pressed.connect(
+					func(): ambient_cg.file_handler.download_file_from_data(opt, self)
+				)
+			else:
+				btn.text = str(opt.get("file_size", 0)) + " bytes"
+				btn.add_theme_font_size_override("font_size", 11)
+				btn.custom_minimum_size = Vector2(100, 30)
 
 			if i < half_point:
 				col1.add_child(btn)
@@ -206,37 +212,15 @@ func _extract_res(file_name: String) -> int:
 
 
 func _load_preview(url: String, request_id: int) -> void:
-	var http = HTTPRequest.new()
-	add_child(http)
-	http.request(url)
-	var response = await http.request_completed
-	remove_child(http)
-	http.queue_free()
+	var helpers = UI_HELPERS.new()
+	var texture = await helpers.load_image_from_url(self, url)
+	helpers.queue_free()
 
 	if request_id != _last_request_id:
 		return
 
-	if response[1] == 200:
-		var headers: PackedStringArray = response[2]
-		var buffer: PackedByteArray = response[3]
-		var img = Image.new()
-		var err = FAILED
-
-		var content_type = ""
-		for header in headers:
-			if header.to_lower().begins_with("content-type:"):
-				content_type = header.to_lower()
-				break
-
-		if "webp" in content_type:
-			err = img.load_webp_from_buffer(buffer)
-		elif "png" in content_type:
-			err = img.load_png_from_buffer(buffer)
-		else:
-			err = img.load_jpg_from_buffer(buffer)
-
-		if err == OK:
-			preview_rect.texture = ImageTexture.create_from_image(img)
+	if texture:
+		preview_rect.texture = texture
 
 
 func _on_download_started(_url: String, asset_name: String) -> void:

@@ -1,6 +1,8 @@
 @tool
 extends PanelContainer
 
+const UI_HELPERS = preload("res://addons/ambientcg/utils/ui_helpers.gd")
+
 var asset_data: Dictionary = {}
 var main_owner: Control
 var browser: Control
@@ -21,34 +23,11 @@ func setup(data: Dictionary, p_owner: Control, p_browser: Control) -> void:
 
 
 func _load_thumbnail(url: String) -> void:
-	var http = HTTPRequest.new()
-	add_child(http)
-	http.request(url)
-	var response = await http.request_completed
-	remove_child(http)
-	http.queue_free()
-
-	if response[1] == 200:
-		var headers: PackedStringArray = response[2]
-		var buffer: PackedByteArray = response[3]
-		var img = Image.new()
-		var err = FAILED
-
-		var content_type = ""
-		for header in headers:
-			if header.to_lower().begins_with("content-type:"):
-				content_type = header.to_lower()
-				break
-
-		if "webp" in content_type:
-			err = img.load_webp_from_buffer(buffer)
-		elif "png" in content_type:
-			err = img.load_png_from_buffer(buffer)
-		else:
-			err = img.load_jpg_from_buffer(buffer)
-
-		if err == OK:
-			texture_rect.texture = ImageTexture.create_from_image(img)
+	var helpers = UI_HELPERS.new()
+	var texture = await helpers.load_image_from_url(self, url)
+	helpers.queue_free()
+	if texture:
+		texture_rect.texture = texture
 
 
 func _on_button_pressed() -> void:
