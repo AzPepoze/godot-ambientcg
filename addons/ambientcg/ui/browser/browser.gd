@@ -55,6 +55,11 @@ func setup_filters():
 
 
 func init_browser():
+	if not CONFIG.is_plugin_enabled():
+		status_overlay.show()
+		status_label.text = "Error: AmbientCG plugin not enabled"
+		return
+	
 	var info = await AmbientCG.api.api_init()
 	if info.is_empty():
 		status_overlay.show()
@@ -84,6 +89,8 @@ func _process(_delta: float) -> void:
 
 func search(query: String = "", use_next: bool = false):
 	if awaiting_search_finish:
+		return
+	if not CONFIG.is_plugin_enabled():
 		return
 	awaiting_search_finish = true
 

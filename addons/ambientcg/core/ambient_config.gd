@@ -32,6 +32,14 @@ static func get_setting(key: String, default_value: Variant) -> Variant:
 	return ProjectSettings.get_setting(key, default_value)
 
 
+static func is_plugin_enabled() -> bool:
+	return ClassDB.class_exists("AmbientCG")
+
+
 static func set_setting(key: String, value: Variant) -> void:
+	# Normalize path values to lowercase for cross-platform compatibility
+	if key in [SETTING_DOWNLOAD_PATH, SETTING_EXTRACT_PATH, SETTING_MATERIAL_DIR, SETTING_ENVIRONMENT_DIR]:
+		if typeof(value) == TYPE_STRING:
+			value = value.to_lower()
 	ProjectSettings.set_setting(key, value)
 	ProjectSettings.save()

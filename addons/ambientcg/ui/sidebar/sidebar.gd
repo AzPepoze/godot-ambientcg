@@ -27,7 +27,8 @@ var _last_request_id: int = 0
 func _ready() -> void:
 	asset_inspector.hide()
 	sidebar_placeholder.show()
-	AmbientCG.signals.download_started.connect(_on_download_started)
+	if CONFIG.is_plugin_enabled():
+		AmbientCG.signals.download_started.connect(_on_download_started)
 	zip_radio.toggled.connect(_on_container_changed)
 	usdz_radio.toggled.connect(_on_container_changed)
 
@@ -51,7 +52,8 @@ func display_asset(asset: Dictionary) -> void:
 	asset_data = asset
 
 	if asset_data.is_empty():
-		AmbientCG.logger.error("Failed to fetch asset details", "UI")
+		if CONFIG.is_plugin_enabled():
+			AmbientCG.logger.error("Failed to fetch asset details", "UI")
 		return
 
 	asset_title.text = current_asset_id
@@ -89,6 +91,9 @@ func display_asset(asset: Dictionary) -> void:
 
 
 func _fetch_single_implementation(uri: String, request_id: int) -> void:
+	if not CONFIG.is_plugin_enabled():
+		return
+	
 	var impl_data = await AmbientCG.api.api_init_implementation(uri)
 
 	if request_id != _last_request_id:
@@ -109,6 +114,9 @@ func _on_container_changed(_toggled: bool):
 
 
 func _build_download_ui() -> void:
+	if not CONFIG.is_plugin_enabled():
+		return
+	
 	for c in groups_container.get_children():
 		c.queue_free()
 
@@ -159,7 +167,7 @@ func _build_download_ui() -> void:
 		for i in range(list.size()):
 			var opt = list[i]
 			var btn = Button.new()
-			var file_size = AmbientCG.Utils.format_file_size(opt.get("file_size", 0))
+			var file_size = AmbientCG.Utils.format_file_size(opt.get("file_size", 0)) if CONFIG.is_plugin_enabled() else str(opt.get("file_size", 0)) + " bytes"
 			# Show resolution like "1K" and the file size nicely
 			btn.text = (
 				opt.get("local_file_name", "").replace("." + filter_ext, "").replace(
@@ -171,7 +179,8 @@ func _build_download_ui() -> void:
 			)
 			btn.add_theme_font_size_override("font_size", 11)
 			btn.custom_minimum_size = Vector2(100, 30)
-			btn.pressed.connect(func(): AmbientCG.file_handler.download_file_from_data(opt, self))
+			if CONFIG.is_plugin_enabled():
+				btn.pressed.connect(func(): AmbientCG.file_handler.download_file_from_data(opt, self))
 
 			if i < half_point:
 				col1.add_child(btn)

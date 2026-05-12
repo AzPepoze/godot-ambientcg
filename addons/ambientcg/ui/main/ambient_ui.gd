@@ -9,8 +9,9 @@ var active: bool = false
 
 
 func _ready() -> void:
-	AmbientCG.file_handler.check_dirs()
-	AmbientCG.logger.info("AmbientCG UI initialized and folders checked", "UI")
+	if ClassDB.class_exists("AmbientCG"):
+		AmbientCG.file_handler.check_dirs()
+		AmbientCG.logger.info("AmbientCG UI initialized and folders checked", "UI")
 
 
 func open() -> void:

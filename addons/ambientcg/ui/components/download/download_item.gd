@@ -17,8 +17,9 @@ var _is_extracting: bool = false
 func _ready() -> void:
 	title_label.text = asset_name
 	extract_button.hide()
-	AmbientCG.signals.download_progress_updated.connect(_on_progress_updated)
-	AmbientCG.signals.download_completed.connect(_on_download_completed)
+	if CONFIG.is_plugin_enabled():
+		AmbientCG.signals.download_progress_updated.connect(_on_progress_updated)
+		AmbientCG.signals.download_completed.connect(_on_download_completed)
 
 
 func setup(p_url: String, p_name: String):
@@ -45,8 +46,9 @@ func _on_download_completed(p_path: String):
 		status_label.text = "Extracting..."
 		progress_bar.hide()
 
-		var default_path = CONFIG.get_setting(
-			CONFIG.SETTING_EXTRACT_PATH, CONFIG.DEFAULT_EXTRACT_PATH
-		)
-		await AmbientCG.file_handler.extract_all(local_path, default_path)
+		if CONFIG.is_plugin_enabled():
+			var default_path = CONFIG.get_setting(
+				CONFIG.SETTING_EXTRACT_PATH, CONFIG.DEFAULT_EXTRACT_PATH
+			)
+			await AmbientCG.file_handler.extract_all(local_path, default_path)
 		queue_free()

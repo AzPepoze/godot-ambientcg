@@ -33,4 +33,7 @@ func _on_save_button_pressed() -> void:
 	CONFIG.set_setting(CONFIG.SETTING_ENVIRONMENT_DIR, env_path_edit.text)
 	CONFIG.set_setting(CONFIG.SETTING_DOWNLOAD_PATH, down_path_edit.text)
 
-	AmbientCG.logger.info("Settings saved successfully", "Settings")
+	if CONFIG.is_plugin_enabled():
+		AmbientCG.logger.info("Settings saved successfully", "Settings")
+	
+	load_settings()
