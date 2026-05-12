@@ -32,10 +32,3 @@ jobs:
           files: godot-ambientcg-${{ github.ref_name }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update Godot Asset Library
-        uses: deep-entertainment/godot-asset-lib-action@v0.4.0
-        with:
-          username: ${{ secrets.GODOT_ASSET_LIB_USER }}
-          password: ${{ secrets.GODOT_ASSET_LIB_PASSWORD }}
-          assetId: ${{ secrets.GODOT_ASSET_ID }}
